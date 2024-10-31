@@ -1,0 +1,30 @@
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+ url      = env("DATABASE_URL")
+}
+
+model Material {
+ id          String    @id @default(cuid())
+ name        String
+ description String?
+ image       String    
+ createdAt   DateTime  @default(now())
+ updatedAt   DateTime  @updatedAt
+ analyses    Analysis[]
+}
+
+model Analysis {
+ id              String    @id @default(cuid())
+ materialId      String
+ material        Material  @relation(fields: [materialId], references: [id])
+ comparisonImage String
+ initialGrade    Float
+ testGrade       Float
+ differenceGrade Float
+ createdAt       DateTime  @default(now())
+ updatedAt       DateTime  @updatedAt
+}
