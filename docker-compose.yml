@@ -1,3 +1,4 @@
+@"
 version: '3'
 
 services:
@@ -10,6 +11,24 @@ services:
     environment:
       - NODE_ENV=production
       - NUXT_HOST=0.0.0.0
+      - DATABASE_URL=\${DATABASE_URL}
+      - AUTH_SECRET=\${AUTH_SECRET}
+      - AUTH_ORIGIN=\${AUTH_ORIGIN}
+      - NUXT_SESSION_PASSWORD=\${NUXT_SESSION_PASSWORD}
+    depends_on:
+      - db
+    networks:
+      - web
+
+  db:
+    image: postgres:15-alpine
+    container_name: crococroc-db
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=Sonceboz2025+
+      - POSTGRES_DB=crococroc
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - web
 
@@ -25,15 +44,11 @@ services:
       - ./certbot/www:/var/www/certbot
     networks:
       - web
-    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+volumes:
+  postgres_data:
 
 networks:
   web:
     driver: bridge
+"@ | Out-File -FilePath docker-compose.yml -Encoding utf8
