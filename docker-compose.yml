@@ -1,6 +1,6 @@
 services:
   app:
-    image: node:20.11.1-slim
+    build: .  # Utilise le Dockerfile local
     container_name: crococroc-nuxt3
     restart: always
     ports:
@@ -12,12 +12,6 @@ services:
       - AUTH_SECRET=${AUTH_SECRET}
       - AUTH_ORIGIN=${AUTH_ORIGIN}
       - NUXT_SESSION_PASSWORD=${NUXT_SESSION_PASSWORD}
-    volumes:
-      - .:/app
-    working_dir: /app
-    command: sh -c "corepack enable && pnpm install && pnpm run build && node .output/server/index.mjs"
-    depends_on:
-      - db
     networks:
       - web
 
@@ -57,7 +51,7 @@ services:
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
-    command: certonly --webroot -w /var/www/certbot --force-renewal --email info@sorana.ch -d sorana.ch -d www.sorana.ch --agree-tos
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     depends_on:
       - nginx
 
