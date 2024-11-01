@@ -13,7 +13,7 @@ services:
       - AUTH_ORIGIN=${AUTH_ORIGIN}
       - NUXT_SESSION_PASSWORD=${NUXT_SESSION_PASSWORD}
     volumes:
-      - /root/crococroc:/app  # Chemin absolu vers votre projet
+      - crococroc_data:/app
     working_dir: /app
     command: sh -c "corepack enable && pnpm install && pnpm run build && node .output/server/index.mjs"
     networks:
@@ -27,13 +27,19 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /root/crococroc/nginx/conf.d:/etc/nginx/conf.d:ro
-      - /root/crococroc/certbot/conf:/etc/letsencrypt:ro
-      - /root/crococroc/certbot/www:/var/www/certbot:ro
+      - nginx_conf:/etc/nginx/conf.d:ro
+      - certbot_conf:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
     depends_on:
       - app
     networks:
       - web
+
+volumes:
+  crococroc_data:
+  nginx_conf:
+  certbot_conf:
+  certbot_www:
 
 networks:
   web:
