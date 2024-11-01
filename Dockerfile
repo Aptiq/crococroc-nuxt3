@@ -5,17 +5,20 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Étape de build
+# Build stage
 FROM base AS build
 COPY package.json pnpm-lock.yaml ./
-# Suppression de --frozen-lockfile pour permettre la mise à jour des dépendances
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install
+COPY prisma ./prisma
+RUN pnpm prisma generate
 COPY . .
-RUN pnpm run build
+RUN pnpm build
 
-# Étape de production
+# Production stage
 FROM base
 COPY --from=build /app/.output /app/.output
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 ENV NUXT_HOST=0.0.0.0
 ENV PORT=3000
 
