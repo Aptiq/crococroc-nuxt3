@@ -6,7 +6,7 @@ services:
     container_name: crococroc-nuxt3
     restart: always
     ports:
-      - "3000:3000"
+      - "3000:3000"  # Mappe le port 3000 de l'hôte au conteneur
     environment:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
@@ -45,6 +45,9 @@ services:
       - app
     networks:
       - web
+    environment:
+      - NGINX_HOST=${NGINX_HOST}
+      - NGINX_PORT=80  # Ajoute cette variable si elle est utilisée dans ta conf Nginx
 
 volumes:
   postgres_data:
