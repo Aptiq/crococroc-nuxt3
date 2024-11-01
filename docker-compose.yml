@@ -1,8 +1,6 @@
-version: '3'
-
 services:
   app:
-    build: .
+    image: node:20.11.1-slim
     container_name: crococroc-nuxt3
     restart: always
     ports:
@@ -14,6 +12,10 @@ services:
       - AUTH_SECRET=${AUTH_SECRET}
       - AUTH_ORIGIN=${AUTH_ORIGIN}
       - NUXT_SESSION_PASSWORD=${NUXT_SESSION_PASSWORD}
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: sh -c "corepack enable && pnpm install && pnpm run build && node .output/server/index.mjs"
     depends_on:
       - db
     networks:
@@ -27,7 +29,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=crococroc
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -41,9 +43,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
     depends_on:
       - app
     networks:
@@ -55,6 +57,7 @@ services:
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email info@sorana.ch -d sorana.ch -d www.sorana.ch --agree-tos
     depends_on:
       - nginx
 
