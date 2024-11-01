@@ -45,3 +45,8 @@ services:
       - app
     networks:
       - web
+
+networks:
+  web:
+    name: crococroc_network
+    driver: bridge
