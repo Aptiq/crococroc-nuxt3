@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "nuxt build",
+    "build": "prisma generate && nuxt build",
     "dev": "nuxt dev",
     "dev:prepare": "nuxt prepare",
     "generate": "nuxt generate",
@@ -14,7 +14,9 @@
     "@nuxt/image": "1.8.1",
     "@nuxt/ui": "2.18.7",
     "@nuxt/ui-pro": "1.4.4",
+    "@pinia-plugin-persistedstate/nuxt": "^1.2.1",
     "@pinia/nuxt": "0.5.5",
+    "@prisma/client": "5.21.1",
     "@vueuse/nuxt": "11.1.0",
     "nuxt": "3.13.2",
     "pinia": "2.1.7",
@@ -23,8 +25,10 @@
     "zod": "3.23.8"
   },
   "devDependencies": {
-    "@prisma/client": "5.21.1",
+    "@types/node": "^22.8.7",
+    "@vite-pwa/nuxt": "^0.10.5",
     "prisma": "5.21.1",
-    "@vite-pwa/nuxt": "^0.10.5"
+    "typescript": "^5.6.3",
+    "vue-tsc": "^2.1.10"
   }
 }

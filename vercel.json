@@ -1,0 +1,9 @@
+{
+    "buildCommand": "prisma generate && npm run build",
+    "builds": [
+      {
+        "src": "nuxt.config.ts",
+        "use": "@nuxtjs/vercel-builder"
+      }
+    ]
+  }

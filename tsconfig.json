@@ -1,4 +1,13 @@
 {
-  // https://nuxt.com/docs/guide/concepts/typescript
-  "extends": "./.nuxt/tsconfig.json"
+  "extends": "./.nuxt/tsconfig.json",
+  "compilerOptions": {
+    "strict": false,
+    "skipLibCheck": true,
+    "types": [
+      "@pinia/nuxt",
+      "@vueuse/nuxt",
+      "@nuxt/ui",
+      "@types/node"
+    ]
+  }
 }

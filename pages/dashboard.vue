@@ -167,12 +167,17 @@
 </template>
 
 <script setup lang="ts">
+import { useMaterialsStore } from '~/stores/materials'
+
 // Types
 interface DashboardStats {
   materialsCount: number
   analysesCount: number
   averageGrade: string
 }
+
+// Store
+const materialsStore = useMaterialsStore()
 
 // Valeurs par défaut
 const defaultStats: DashboardStats = {
@@ -183,8 +188,12 @@ const defaultStats: DashboardStats = {
 
 // État et données
 const dashboardStats = ref<DashboardStats>(defaultStats)
-const recentMaterials = ref([])
 const recentAnalyses = ref([])
+
+// Utiliser le computed pour les matières récentes
+const recentMaterials = computed(() => {
+  return materialsStore.sortedMaterials.slice(0, 3)
+})
 
 // Configuration du tableau
 const columns = [
@@ -216,8 +225,7 @@ onMounted(async () => {
   }
 
   try {
-    const materials = await $fetch('/api/materials')
-    recentMaterials.value = materials?.slice(0, 3) || []
+    await materialsStore.fetchMaterials()
   } catch (error) {
     console.error('Erreur lors du chargement des matières:', error)
   }

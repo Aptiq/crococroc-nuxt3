@@ -14,7 +14,15 @@ export default defineNuxtConfig({
   },
   
   pinia: {
-    autoImports: ['defineStore', 'storeToRefs']
+    autoImports: [
+      'defineStore',
+      'storeToRefs',
+    ]
+  },
+
+  piniaPersistedstate: {
+    storage: 'localStorage',
+    debug: true
   },
 
   build: {
@@ -93,5 +101,19 @@ export default defineNuxtConfig({
   nitro: {
     compressPublicAssets: true,
     minify: true
+  },
+
+  typescript: {
+    strict: false,
+    typeCheck: false,
+    shim: false
+  },
+
+  experimental: {
+    payloadExtraction: false
+  },
+
+  routeRules: {
+    '/api/**': { cors: true }
   }
 })

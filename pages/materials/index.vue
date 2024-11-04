@@ -68,7 +68,18 @@
 </template>
 
 <script setup lang="ts">
-const { data: materials, pending: loading } = await useFetch('/api/materials')
+import { useMaterialsStore } from '~/stores/materials'
+
+const store = useMaterialsStore()
+
+// Charger les matières au montage du composant
+onMounted(async () => {
+  await store.fetchMaterials()
+})
+
+// Utiliser les données du store
+const materials = computed(() => store.sortedMaterials)
+const loading = computed(() => store.loading)
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('fr-FR', {

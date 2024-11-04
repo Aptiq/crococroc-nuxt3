@@ -37,7 +37,7 @@
         <!-- Prévisualisation de la matière sélectionnée -->
         <div v-else class="space-y-4">
           <img 
-            :src="selectedMaterial?.imageUrl || file1Preview" 
+            :src="selectedMaterial?.image || file1Preview" 
             class="w-full h-48 object-cover rounded-lg" 
           />
           <div class="text-sm font-medium text-gray-900 dark:text-white">
@@ -121,7 +121,7 @@
             @click="selectMaterial(material)"
           >
             <img
-              :src="material.imageUrl"
+              :src="material.image"
               :alt="material.name"
               class="w-full h-32 object-cover rounded-lg mb-2"
             />
@@ -152,6 +152,9 @@
 </template>
 
 <script setup lang="ts">
+import { useMaterialsStore } from '~/stores/materials'
+
+const materialsStore = useMaterialsStore()
 const selectedMaterial = ref(null)
 const file1 = ref<File | null>(null)
 const file2 = ref<File | null>(null)
@@ -161,14 +164,16 @@ const isAnalyzing = ref(false)
 const isSelectMaterialModalOpen = ref(false)
 const searchQuery = ref('')
 
-// Récupérer les matières depuis l'API
-const { data: materials } = await useFetch('/api/materials')
+// Charger les matières au montage
+onMounted(async () => {
+  await materialsStore.fetchMaterials()
+})
 
 // Filtrer les matières selon la recherche
 const filteredMaterials = computed(() => {
-  if (!searchQuery.value) return materials.value
+  if (!searchQuery.value) return materialsStore.materials
   const query = searchQuery.value.toLowerCase()
-  return materials.value?.filter(material => 
+  return materialsStore.materials.filter(material => 
     material.name.toLowerCase().includes(query)
   )
 })
@@ -218,7 +223,7 @@ async function analyzeImages() {
   try {
     isAnalyzing.value = true
     const formData = new FormData()
-    formData.append('file1', selectedMaterial.value.imageUrl)
+    formData.append('file1', selectedMaterial.value.image)
     formData.append('file2', file2.value!)
 
     results.value = await $fetch('/api/analyze', {

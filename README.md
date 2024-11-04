@@ -5,10 +5,13 @@ Application d'analyse et de suivi de matières développée avec Nuxt 3.
 ## 🚀 Fonctionnalités
 
 - 📸 Capture et analyse d'images
-- 📊 Comparaison et notation ISO
+- 📊 Comparaison et notation automatique des couleurs
 - 📱 Interface PWA responsive
 - 🔄 Synchronisation en temps réel
 - 🗄️ Stockage sécurisé des données
+- 📈 Tableau de bord analytique
+- 🔍 Recherche et filtrage des matières
+- 📱 Mode hors ligne
 
 ## 🛠 Prérequis
 
@@ -27,6 +30,8 @@ cd crococroc-nuxt3
 2. **Installer les dépendances**
 ```bash
 pnpm install
+pnpm add -D vue-tsc typescript @types/node
+pnpm add pinia-plugin-persistedstate
 ```
 
 3. **Configurer PostgreSQL**
@@ -71,7 +76,10 @@ crococroc-nuxt3/
 │   └── TestResults/    # Affichage des résultats
 ├── pages/              # Routes de l'application
 │   ├── analyze/        # Page d'analyse
+│   ├── dashboard/      # Tableau de bord
 │   └── materials/      # Gestion des matières
+├── stores/             # Stores Pinia
+│   └── materials.ts    # Store des matières
 ├── server/             # API et logique serveur
 │   └── api/           # Endpoints API
 ├── prisma/             # Base de données
@@ -80,6 +88,13 @@ crococroc-nuxt3/
 ```
 
 ## 🔧 Configuration
+
+### Persistance des données
+
+L'application utilise `pinia-plugin-persistedstate` pour persister les données du store dans le localStorage. Cela permet de :
+- Conserver les données entre les rafraîchissements
+- Améliorer les performances
+- Supporter le mode hors ligne
 
 ### Variables d'Environnement
 
@@ -112,6 +127,38 @@ PORT=3000
 - `pnpm db:studio` - Interface Prisma
 - `pnpm db:push` - Mise à jour DB
 
+## 🌟 Fonctionnalités Détaillées
+
+### Analyse d'Images
+- Capture d'images via webcam ou appareil photo
+- Comparaison automatique des couleurs
+- Notation selon les standards ISO
+- Historique des analyses par matière
+
+### Persistance et Performance
+- Stockage local des données avec Pinia
+- Mise en cache automatique
+- Synchronisation intelligente
+- Optimisation des requêtes
+
+### Gestion des Matières
+- Création et édition de matières
+- Upload d'images
+- Catégorisation et description
+- Recherche et filtrage
+
+### Dashboard
+- Statistiques en temps réel
+- Visualisation des dernières analyses
+- Suivi des performances
+- Export des données
+
+### PWA
+- Installation sur l'appareil
+- Mode hors ligne
+- Notifications push
+- Mise à jour automatique
+
 ## 🤝 Contribution
 
 1. Fork le projet
@@ -125,7 +172,16 @@ PORT=3000
 - [Documentation Nuxt 3](https://nuxt.com/docs)
 - [Documentation Prisma](https://www.prisma.io/docs)
 - [Guide PWA](https://web.dev/progressive-web-apps/)
+- [Documentation Pinia](https://pinia.vuejs.org/)
+- [Documentation UI Nuxt](https://ui.nuxt.com/)
 
 ## 📄 License
 
 [MIT](LICENSE)
+
+## 🙏 Remerciements
+
+- [Nuxt Team](https://nuxt.com/)
+- [Vue.js Team](https://vuejs.org/)
+- [Prisma Team](https://www.prisma.io/)
+- [Contributeurs](https://github.com/Aptiq/crococroc-nuxt3/graphs/contributors)

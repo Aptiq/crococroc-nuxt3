@@ -17,7 +17,6 @@
     </UPageHeader>
 
     <UCard class="mt-8">
-      <!-- Retirons le schéma pour tester directement -->
       <form @submit.prevent="handleSubmit">
         <UFormGroup
           label="Nom de la matière"
@@ -127,8 +126,12 @@ async function handleSubmit() {
       imageLength: materialData.image.length
     })
 
+    // Créer la matière
     const result = await materialsStore.createMaterial(materialData)
     console.log('Material created:', result)
+
+    // Rafraîchir la liste des matières
+    await materialsStore.fetchMaterials()
 
     useToast().add({
       title: 'Succès',
@@ -136,7 +139,8 @@ async function handleSubmit() {
       color: 'green'
     })
 
-    await router.push('/materials')
+    // Rediriger vers la liste des matières
+    await navigateTo('/materials')
   } catch (error: any) {
     console.error('Submission error:', error)
     useToast().add({

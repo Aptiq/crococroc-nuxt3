@@ -39,6 +39,8 @@ export const useMaterialsStore = defineStore('materials', {
 
   actions: {
     async fetchMaterials() {
+      if (this.materials.length > 0) return // Éviter les requêtes inutiles si les données sont déjà chargées
+      
       this.loading = true
       try {
         const response = await $fetch('/api/materials')
@@ -77,7 +79,6 @@ export const useMaterialsStore = defineStore('materials', {
           imageLength: data.image?.length
         });
 
-        // Créez un objet avec les données exactes
         const requestBody = {
           name: data.name || '',
           description: data.description || '',
@@ -86,13 +87,12 @@ export const useMaterialsStore = defineStore('materials', {
 
         console.log('Store: Request body:', requestBody);
 
-        // Ajoutez les headers pour s'assurer que le content-type est correct
         const response = await $fetch('/api/materials', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(requestBody) // Assurons-nous que c'est une chaîne JSON
+          body: JSON.stringify(requestBody)
         });
 
         console.log('Store: Response received:', response);
@@ -125,7 +125,6 @@ export const useMaterialsStore = defineStore('materials', {
         
         console.log('Analysis completed:', response)
         
-        // Mise à jour du matériau actuel avec la nouvelle analyse
         if (this.currentMaterial && this.currentMaterial.id === materialId) {
           this.currentMaterial.analyses.push(response)
         }
@@ -139,5 +138,11 @@ export const useMaterialsStore = defineStore('materials', {
         this.loading = false
       }
     }
+  },
+
+  persist: {
+    key: 'materials-store',
+    storage: process.client ? localStorage : null,
+    paths: ['materials', 'currentMaterial']
   }
-});
+})

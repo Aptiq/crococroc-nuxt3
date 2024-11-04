@@ -1,4 +1,5 @@
-import { defineEventHandler, readBody } from 'h3'
+import { defineEventHandler, readBody, createError } from 'h3'
+import { Prisma } from '@prisma/client'
 import prisma from '~/server/utils/prisma'
 
 export default defineEventHandler(async (event) => {
@@ -20,6 +21,20 @@ export default defineEventHandler(async (event) => {
       throw createError({
         statusCode: 400,
         message: 'Le nom est requis'
+      })
+    }
+
+    // Vérifier si la matière existe déjà
+    const existingMaterial = await prisma.material.findUnique({
+      where: {
+        name: body.name.trim()
+      }
+    })
+
+    if (existingMaterial) {
+      throw createError({
+        statusCode: 409,
+        message: 'Une matière avec ce nom existe déjà'
       })
     }
 
@@ -45,7 +60,7 @@ export default defineEventHandler(async (event) => {
           orderBy: {
             created_at: 'desc'
           },
-          take: 5 // Limite les 5 dernières analyses
+          take: 5
         }
       }
     })
@@ -53,20 +68,26 @@ export default defineEventHandler(async (event) => {
     console.log('Material created successfully:', material.id)
     return material
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in POST /api/materials:', error)
     
-    // Gestion spécifique des erreurs Prisma
-    if (error.code === 'P2002') {
-      throw createError({
-        statusCode: 409,
-        message: 'Une matière avec ce nom existe déjà'
-      })
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        throw createError({
+          statusCode: 409,
+          message: 'Une matière avec ce nom existe déjà'
+        })
+      }
+    }
+
+    // Si c'est déjà une H3Error, on la renvoie directement
+    if (error.statusCode) {
+      throw error
     }
 
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || 'Erreur lors de la création de la matière'
+      statusCode: 500,
+      message: 'Erreur lors de la création de la matière'
     })
   }
 })
