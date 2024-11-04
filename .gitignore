@@ -25,10 +25,11 @@ yarn-error.log*
 
 # Environment variables
 .env
-.env.*
-!.env.example
+.env.local
+.env.production
+.env.development
 stack.env
-*.env
+!.env.example  # On exclut .env.example de l'ignore
 
 # System files
 .DS_Store
