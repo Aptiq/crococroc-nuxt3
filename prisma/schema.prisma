@@ -1,30 +1,34 @@
 generator client {
- provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
- provider = "postgresql"
- url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Material {
- id          String    @id @default(cuid())
- name        String
- description String?
- image       String    
- createdAt   DateTime  @default(now())
- updatedAt   DateTime  @updatedAt
- analyses    Analysis[]
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  image       String     // Image en base64
+  created_at  DateTime   @default(now()) @map("created_at")
+  updated_at  DateTime   @updatedAt @map("updated_at")
+  analyses    Analysis[]
+
+  @@map("materials")
 }
 
 model Analysis {
- id              String    @id @default(cuid())
- materialId      String
- material        Material  @relation(fields: [materialId], references: [id])
- comparisonImage String
- initialGrade    Float
- testGrade       Float
- differenceGrade Float
- createdAt       DateTime  @default(now())
- updatedAt       DateTime  @updatedAt
+  id              String   @id @default(cuid())
+  material_id     String   @map("material_id")
+  material        Material @relation(fields: [material_id], references: [id])
+  comparison_image String  @map("comparison_image") // Image en base64
+  initial_grade   Float    @map("initial_grade")
+  test_grade      Float    @map("test_grade")
+  difference_grade Float   @map("difference_grade")
+  created_at      DateTime @default(now()) @map("created_at")
+  updated_at      DateTime @updatedAt @map("updated_at")
+
+  @@map("analyses")
 }
