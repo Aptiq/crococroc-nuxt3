@@ -1,7 +1,6 @@
 {
     "buildCommand": "pnpm prisma generate && pnpm build",
     "installCommand": "pnpm install",
-    "framework": "nuxt",
     "builds": [
       {
         "src": "nuxt.config.ts",
