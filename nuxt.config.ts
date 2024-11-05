@@ -1,6 +1,8 @@
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  // Configuration de base
+  devtools: { enabled: false }, // Désactivé pour éviter les conflits
   
+  // Modules
   modules: [
     '@nuxt/ui',
     '@pinia/nuxt',
@@ -8,11 +10,13 @@ export default defineNuxtConfig({
     '@vite-pwa/nuxt'
   ],
   
+  // Configuration UI
   ui: {
     global: true,
     icons: ['heroicons']
   },
   
+  // Configuration Pinia
   pinia: {
     autoImports: [
       'defineStore',
@@ -29,6 +33,7 @@ export default defineNuxtConfig({
     transpile: ['pinia']
   },
   
+  // Configuration de l'application
   app: {
     head: {
       title: 'CrocoCroc',
@@ -47,6 +52,7 @@ export default defineNuxtConfig({
     layoutTransition: { name: 'layout', mode: 'out-in' }
   },
 
+  // Configuration PWA
   pwa: {
     manifest: {
       name: 'CrocoCroc',
@@ -98,22 +104,38 @@ export default defineNuxtConfig({
     }
   },
 
+  // Configuration Nitro
   nitro: {
     compressPublicAssets: true,
-    minify: true
+    minify: true,
+    compatibilityDate: '2024-04-03'
   },
 
+  // Configuration TypeScript
   typescript: {
     strict: false,
     typeCheck: false,
     shim: false
   },
 
+  // Configuration expérimentale
   experimental: {
     payloadExtraction: false
   },
 
+  // Règles de routage
   routeRules: {
     '/api/**': { cors: true }
+  },
+
+  // Configuration Vite pour résoudre les problèmes d'inspecteur
+  vite: {
+    vue: {
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag.includes('-')
+        }
+      }
+    }
   }
 })
