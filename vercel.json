@@ -1,6 +1,6 @@
 {
     "buildCommand": "pnpm run build",
-    "installCommand": "node scripts/install.js",
+    "installCommand": "pnpm install",
     "builds": [
       {
         "src": "nuxt.config.ts",
