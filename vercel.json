@@ -1,11 +1,7 @@
 {
+    "version": 2,
     "framework": "nuxt",
     "buildCommand": "pnpm run build",
-    "installCommand": "pnpm install --no-frozen-lockfile",
-    "builds": [
-      {
-        "src": "nuxt.config.ts",
-        "use": "@nuxtjs/vercel-builder"
-      }
-    ]
+    "installCommand": "pnpm install",
+    "outputDirectory": ".output/public"
   }
