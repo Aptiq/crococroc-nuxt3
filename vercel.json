@@ -1,13 +1,10 @@
 {
     "buildCommand": "pnpm run build",
-    "installCommand": "pnpm install",
+    "installCommand": "node scripts/install.js",
     "builds": [
       {
         "src": "nuxt.config.ts",
-        "use": "@nuxtjs/vercel-builder",
-        "config": {
-          "packageManager": "pnpm"
-        }
+        "use": "@nuxtjs/vercel-builder"
       }
     ],
     "version": 2
