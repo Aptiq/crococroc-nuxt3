@@ -29,7 +29,7 @@
           </template>
           
           <img 
-            :src="analysis.image1.gray_image_str"
+            :src="analysis.image1_gray"
             class="w-full rounded-lg mb-4"
             alt="État initial"
           />
@@ -37,12 +37,12 @@
           <div class="space-y-2">
             <UStat 
               label="Note ISO"
-              :value="analysis.image1.iso_grade.toFixed(1)"
-              :color="getGradeColor(analysis.image1.iso_grade)"
+              :value="analysis.image1_iso_grade.toFixed(1)"
+              :color="getGradeColor(analysis.image1_iso_grade)"
             />
             <UStat 
               label="Valeur moyenne"
-              :value="analysis.image1.average_gray.toFixed(2)"
+              :value="analysis.image1_avg_gray.toFixed(2)"
             />
           </div>
         </UCard>
@@ -54,7 +54,7 @@
           </template>
           
           <img 
-            :src="analysis.image2.gray_image_str"
+            :src="analysis.image2_gray"
             class="w-full rounded-lg mb-4"
             alt="État après test"
           />
@@ -62,12 +62,12 @@
           <div class="space-y-2">
             <UStat 
               label="Note ISO"
-              :value="analysis.image2.iso_grade.toFixed(1)"
-              :color="getGradeColor(analysis.image2.iso_grade)"
+              :value="analysis.image2_iso_grade.toFixed(1)"
+              :color="getGradeColor(analysis.image2_iso_grade)"
             />
             <UStat 
               label="Valeur moyenne"
-              :value="analysis.image2.average_gray.toFixed(2)"
+              :value="analysis.image2_avg_gray.toFixed(2)"
             />
           </div>
         </UCard>
@@ -101,7 +101,7 @@
           />
           <UStat
             label="Résolution"
-            :value="analysis.image1.resolution"
+            :value="analysis.image1_resolution"
           />
         </div>
       </UCard>
@@ -120,13 +120,13 @@
 const route = useRoute()
 const { id } = route.params
 
-// Simuler la récupération des données depuis l'API
+// Récupération des données depuis l'API
 const { data: analysis, pending } = await useFetch(`/api/analyses/${id}`)
 
 // Formatage de la date
 const analysisDate = computed(() => {
   if (!analysis.value) return ''
-  return new Date().toLocaleDateString('fr-FR', {
+  return new Date(analysis.value.created_at).toLocaleDateString('fr-FR', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',

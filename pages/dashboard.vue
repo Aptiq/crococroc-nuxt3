@@ -1,17 +1,28 @@
 <template>
   <UContainer>
+    <!-- En-tête avec boutons d'action -->
     <UPageHeader
       title="Tableau de bord"
       description="Bienvenue sur CrocoCroc"
     >
       <template #right>
-        <UButton
-          to="/materials/new"
-          color="primary"
-          icon="i-heroicons-plus"
-        >
-          Nouvelle matière
-        </UButton>
+        <div class="flex gap-2">
+          <UButton
+            to="/analyze"
+            color="primary"
+            icon="i-heroicons-camera"
+          >
+            Nouvelle analyse
+          </UButton>
+          <UButton
+            to="/materials/new"
+            color="gray"
+            variant="soft"
+            icon="i-heroicons-plus"
+          >
+            Nouvelle matière
+          </UButton>
+        </div>
       </template>
     </UPageHeader>
 
@@ -50,14 +61,24 @@
       <template #header>
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-semibold">Dernières matières</h2>
-          <UButton
-            to="/materials"
-            color="gray"
-            variant="ghost"
-            icon="i-heroicons-arrow-right"
-          >
-            Voir tout
-          </UButton>
+          <div class="flex gap-2">
+            <UButton
+              to="/materials/new"
+              color="primary"
+              variant="ghost"
+              icon="i-heroicons-plus"
+            >
+              Ajouter
+            </UButton>
+            <UButton
+              to="/materials"
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-arrow-right"
+            >
+              Voir tout
+            </UButton>
+          </div>
         </div>
       </template>
 
@@ -167,7 +188,9 @@
 </template>
 
 <script setup lang="ts">
-import { useMaterialsStore } from '~/stores/materials'
+definePageMeta({
+  layout: 'default'
+})
 
 // Types
 interface DashboardStats {
@@ -176,24 +199,14 @@ interface DashboardStats {
   averageGrade: string
 }
 
-// Store
-const materialsStore = useMaterialsStore()
-
-// Valeurs par défaut
-const defaultStats: DashboardStats = {
+// État et données
+const dashboardStats = ref<DashboardStats>({
   materialsCount: 0,
   analysesCount: 0,
   averageGrade: '-'
-}
-
-// État et données
-const dashboardStats = ref<DashboardStats>(defaultStats)
-const recentAnalyses = ref([])
-
-// Utiliser le computed pour les matières récentes
-const recentMaterials = computed(() => {
-  return materialsStore.sortedMaterials.slice(0, 3)
 })
+const recentAnalyses = ref([])
+const recentMaterials = ref([])
 
 // Configuration du tableau
 const columns = [
@@ -218,23 +231,17 @@ const columns = [
 // Chargement des données
 onMounted(async () => {
   try {
-    const stats = await $fetch('/api/stats')
-    dashboardStats.value = stats || defaultStats
-  } catch (error) {
-    console.error('Erreur lors du chargement des statistiques:', error)
-  }
+    const [stats, analyses, materials] = await Promise.all([
+      $fetch('/api/stats'),
+      $fetch('/api/analyses'),
+      $fetch('/api/materials')
+    ])
 
-  try {
-    await materialsStore.fetchMaterials()
-  } catch (error) {
-    console.error('Erreur lors du chargement des matières:', error)
-  }
-
-  try {
-    const analyses = await $fetch('/api/analyses')
+    dashboardStats.value = stats
     recentAnalyses.value = analyses || []
+    recentMaterials.value = materials || []
   } catch (error) {
-    console.error('Erreur lors du chargement des analyses:', error)
+    console.error('Erreur lors du chargement des données:', error)
   }
 })
 

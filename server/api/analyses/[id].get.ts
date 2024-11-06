@@ -2,9 +2,8 @@ import { defineEventHandler } from 'h3'
 import prisma from '~/server/utils/prisma'
 
 export default defineEventHandler(async (event) => {
-  const id = event.context.params.id
-  
   try {
+    const id = event.context.params.id
     const analysis = await prisma.analysis.findUnique({
       where: { id },
       include: {
@@ -23,7 +22,7 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     throw createError({
       statusCode: error.statusCode || 500,
-      message: error.message || 'Erreur lors de la récupération de l\'analyse'
+      message: error.message
     })
   }
 })

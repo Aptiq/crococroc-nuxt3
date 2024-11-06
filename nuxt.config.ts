@@ -2,6 +2,21 @@ export default defineNuxtConfig({
   // Configuration de base
   devtools: { enabled: false }, // Désactivé pour éviter les conflits
   
+  // Variables d'environnement
+  runtimeConfig: {
+    // Variables privées (côté serveur uniquement)
+    POSTGRES_PRISMA_URL: process.env.POSTGRES_PRISMA_URL,
+    POSTGRES_URL_NON_POOLING: process.env.POSTGRES_URL_NON_POOLING,
+    AUTH_SECRET: process.env.AUTH_SECRET,
+    AUTH_ORIGIN: process.env.AUTH_ORIGIN,
+    NUXT_SESSION_PASSWORD: process.env.NUXT_SESSION_PASSWORD,
+    
+    // Variables publiques (accessibles côté client)
+    public: {
+      // Ajoutez ici les variables publiques si nécessaire
+    }
+  },
+  
   // Modules
   modules: [
     '@nuxt/ui',

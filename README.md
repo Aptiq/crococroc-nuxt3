@@ -1,4 +1,4 @@
-# CrocoCroc
+# Crococroc
 
 Application d'analyse et de suivi de matières développée avec Nuxt 3.
 
@@ -17,7 +17,7 @@ Application d'analyse et de suivi de matières développée avec Nuxt 3.
 
 - Node.js >= 20.11.1
 - PNPM >= 9.0.0
-- PostgreSQL >= 15.0
+- Une base de données PostgreSQL (Neon recommandé pour Vercel)
 
 ## 📦 Installation
 
@@ -30,22 +30,15 @@ cd crococroc-nuxt3
 2. **Installer les dépendances**
 ```bash
 pnpm install
-pnpm add -D vue-tsc typescript @types/node
-pnpm add pinia-plugin-persistedstate
 ```
 
-3. **Configurer PostgreSQL**
-- Installer PostgreSQL si ce n'est pas déjà fait
-- Créer une base de données nommée "crococroc"
-- Noter vos identifiants PostgreSQL
-
-4. **Configuration de l'environnement**
+3. **Configuration de l'environnement**
 ```bash
 cp .env.example .env
 # Éditer .env avec vos valeurs
 ```
 
-5. **Initialiser la base de données**
+4. **Initialiser la base de données**
 ```bash
 pnpm prisma generate
 pnpm prisma db push
@@ -60,11 +53,8 @@ pnpm dev
 # Linter
 pnpm lint
 
-# Tests
-pnpm test
-
 # Interface Prisma
-pnpm db:studio
+pnpm prisma studio
 ```
 
 ## 📁 Structure du Projet
@@ -72,14 +62,12 @@ pnpm db:studio
 ```
 crococroc-nuxt3/
 ├── components/          # Composants Vue réutilisables
-│   ├── CameraCapture/  # Capture d'images
-│   └── TestResults/    # Affichage des résultats
+│   ├── app/            # Composants de l'application
+│   └── ui/             # Composants UI
 ├── pages/              # Routes de l'application
 │   ├── analyze/        # Page d'analyse
 │   ├── dashboard/      # Tableau de bord
 │   └── materials/      # Gestion des matières
-├── stores/             # Stores Pinia
-│   └── materials.ts    # Store des matières
 ├── server/             # API et logique serveur
 │   └── api/           # Endpoints API
 ├── prisma/             # Base de données
@@ -89,57 +77,31 @@ crococroc-nuxt3/
 
 ## 🔧 Configuration
 
-### Persistance des données
-
-L'application utilise `pinia-plugin-persistedstate` pour persister les données du store dans le localStorage. Cela permet de :
-- Conserver les données entre les rafraîchissements
-- Améliorer les performances
-- Supporter le mode hors ligne
-
 ### Variables d'Environnement
 
 Créez un fichier `.env` basé sur `.env.example` :
 
 ```env
-# Base de données
-DATABASE_URL=postgresql://postgres:password@localhost:5432/crococroc
-POSTGRES_DB=crococroc
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=your_password
+# URLs de base de données pour Prisma (Neon)
+POSTGRES_PRISMA_URL=postgres://user:password@your-neon-db.server:5432/dbname?sslmode=require
+POSTGRES_URL_NON_POOLING=postgres://user:password@your-neon-db.server:5432/dbname?sslmode=require
 
 # Auth et sécurité
 AUTH_SECRET=your_secret_here
 AUTH_ORIGIN=http://localhost:3000
 NUXT_SESSION_PASSWORD=your_session_password
 
-# Configuration Node
-NODE_ENV=development
-PORT=3000
+# Configuration de déploiement (production uniquement)
+# NITRO_PRESET=vercel
 ```
-
-## 📝 Scripts Disponibles
-
-- `pnpm dev` - Serveur de développement
-- `pnpm build` - Build production
-- `pnpm preview` - Preview de la build
-- `pnpm lint` - Vérification du code
-- `pnpm test` - Tests unitaires
-- `pnpm db:studio` - Interface Prisma
-- `pnpm db:push` - Mise à jour DB
 
 ## 🌟 Fonctionnalités Détaillées
 
 ### Analyse d'Images
 - Capture d'images via webcam ou appareil photo
 - Comparaison automatique des couleurs
-- Notation selon les standards ISO
+- Notation selon les standards définis
 - Historique des analyses par matière
-
-### Persistance et Performance
-- Stockage local des données avec Pinia
-- Mise en cache automatique
-- Synchronisation intelligente
-- Optimisation des requêtes
 
 ### Gestion des Matières
 - Création et édition de matières
@@ -159,6 +121,20 @@ PORT=3000
 - Notifications push
 - Mise à jour automatique
 
+## 🚀 Déploiement
+
+L'application est configurée pour être déployée sur Vercel avec une base de données Neon.
+
+1. **Configuration Vercel**
+   - Connectez votre repository GitHub à Vercel
+   - Configurez les variables d'environnement dans Vercel
+   - Activez le build automatique
+
+2. **Configuration Neon**
+   - Créez une base de données sur Neon
+   - Copiez les URLs de connexion dans vos variables d'environnement
+   - Assurez-vous que la base est accessible depuis Vercel
+
 ## 🤝 Contribution
 
 1. Fork le projet
@@ -172,7 +148,6 @@ PORT=3000
 - [Documentation Nuxt 3](https://nuxt.com/docs)
 - [Documentation Prisma](https://www.prisma.io/docs)
 - [Guide PWA](https://web.dev/progressive-web-apps/)
-- [Documentation Pinia](https://pinia.vuejs.org/)
 - [Documentation UI Nuxt](https://ui.nuxt.com/)
 
 ## 📄 License

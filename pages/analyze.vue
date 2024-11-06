@@ -223,13 +223,23 @@ async function analyzeImages() {
   try {
     isAnalyzing.value = true
     const formData = new FormData()
+    
+    // Ajouter l'ID du matériau et les images
+    formData.append('materialId', selectedMaterial.value.id)
     formData.append('file1', selectedMaterial.value.image)
     formData.append('file2', file2.value!)
 
-    results.value = await $fetch('/api/analyze', {
+    const response = await $fetch('/api/analyze', {
       method: 'POST',
       body: formData
     })
+
+    if (response.success) {
+      // Rediriger vers la page des résultats
+      navigateTo(response.redirectTo)
+    } else {
+      throw new Error(response.error)
+    }
 
     useToast().add({
       title: 'Analyse terminée',
