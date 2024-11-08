@@ -63,7 +63,9 @@ export default defineNuxtConfig({
       ]
     },
     pageTransition: false,
-    layoutTransition: false
+    layoutTransition: false,
+    baseURL: '/',
+    buildAssetsDir: '/_nuxt/'
   },
 
   // Configuration PWA
@@ -117,7 +119,14 @@ export default defineNuxtConfig({
           'Access-Control-Allow-Origin': '*'
         }
       }
-    }
+    },
+    publicAssets: [
+      {
+        baseURL: '/',
+        dir: 'public',
+        maxAge: 60 * 60 * 24 * 365 // 1 an
+      }
+    ]
   },
 
   // Configuration Image

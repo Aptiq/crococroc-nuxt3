@@ -16,7 +16,7 @@
     >
       <!-- Header avec logo et bouton dark mode -->
       <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-        <img src="/logo.png" alt="CrocoCroc" class="h-8 w-auto" />
+        <img src="/logo.png" alt="CrocoCroc" class="h-8" />
         <UButton
           :icon="colorMode.value === 'dark' ? 'i-heroicons-moon' : 'i-heroicons-sun'"
           color="gray"
