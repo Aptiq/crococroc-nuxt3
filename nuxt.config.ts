@@ -1,6 +1,11 @@
 export default defineNuxtConfig({
   // Configuration de base
   devtools: { enabled: false }, // Désactivé pour éviter les conflits
+
+  // Configuration du serveur
+  server: {
+    maxHeaderSize: 32768
+  },
   
   // Variables d'environnement
   runtimeConfig: {

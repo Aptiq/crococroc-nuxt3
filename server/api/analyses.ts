@@ -1,25 +1,24 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, createError } from 'h3'  // Ajout de createError
 import prisma from '~/server/utils/prisma'
 
 export default defineEventHandler(async () => {
   try {
-    const materialsCount = await prisma.material.count()
-    const analysesCount = await prisma.analysis.count()
-    const averageGrade = await prisma.analysis.aggregate({
-      _avg: {
-        differenceGrade: true
+    const analyses = await prisma.analysis.findMany({  // Changé pour retourner les analyses
+      orderBy: {
+        created_at: 'desc'
+      },
+      take: 10,
+      include: {
+        material: true
       }
     })
 
-    return {
-      materialsCount,
-      analysesCount,
-      averageGrade: averageGrade._avg.differenceGrade?.toFixed(1) || '-'
-    }
+    return analyses
   } catch (error: any) {
+    console.error('Error fetching analyses:', error)
     throw createError({
       statusCode: error.statusCode || 500,
-      message: error.message || 'Erreur lors de la récupération des statistiques'
+      message: error.message || 'Erreur lors de la récupération des analyses'
     })
   }
 })
