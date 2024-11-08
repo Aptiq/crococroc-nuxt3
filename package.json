@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@heroicons/vue": "^2.1.5",
-    "@nuxt/image": "1.8.1",
     "@nuxt/ui": "2.18.7",
     "@nuxt/ui-pro": "1.4.4",
     "@nuxtjs/tailwindcss": "^6.12.2",
@@ -32,6 +31,7 @@
     "zod": "3.23.8"
   },
   "devDependencies": {
+    "@nuxt/image": "1.8.1",
     "@types/node": "^22.8.7",
     "@vite-pwa/nuxt": "^0.10.5",
     "prisma": "5.21.1",

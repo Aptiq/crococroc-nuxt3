@@ -16,7 +16,12 @@
     >
       <!-- Header avec logo et bouton dark mode -->
       <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-        <img src="/logo.png" alt="CrocoCroc" class="h-8" />
+        <NuxtImg
+          :src="isDark ? '/logo-dark.svg' : '/logo-light.svg'"
+          alt="CrocoCroc"
+          class="h-8 w-auto"
+          loading="eager"
+        />
         <UButton
           :icon="colorMode.value === 'dark' ? 'i-heroicons-moon' : 'i-heroicons-sun'"
           color="gray"
@@ -48,6 +53,9 @@
 </template>
 
 <script setup lang="ts">
+import darkLogo from '~/assets/images/logo-dark.svg'
+import lightLogo from '~/assets/images/logo-light.svg'
+
 const colorMode = useColorMode()
 const props = defineProps<{
   isOpen: boolean
@@ -80,6 +88,8 @@ const navigation = [
 const toggleDark = () => {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
+
+const isDark = useDark()
 
 // Empêcher le défilement du body quand le menu est ouvert sur mobile
 onMounted(() => {

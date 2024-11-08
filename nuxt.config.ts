@@ -141,7 +141,8 @@ export default defineNuxtConfig({
       lg: 1024,
       xl: 1280,
       xxl: 1536
-    }
+    },
+    dir: 'public'
   },
 
   // Configuration TypeScript
@@ -153,8 +154,15 @@ export default defineNuxtConfig({
 
   // Configuration Vite
   vite: {
+    assetsInclude: ['**/*.svg'],
     build: {
-      target: 'esnext'
+      target: 'esnext',
+      rollupOptions: {
+        external: [
+          '/assets/images/logo-dark.svg',
+          '/assets/images/logo-light.svg'
+        ]
+      }
     },
     vue: {
       template: {

@@ -11,9 +11,6 @@ importers:
       '@heroicons/vue':
         specifier: ^2.1.5
         version: 2.1.5(vue@3.5.12(typescript@5.6.3))
-      '@nuxt/image':
-        specifier: 1.8.1
-        version: 1.8.1(ioredis@5.4.1)(magicast@0.3.5)(rollup@4.24.4)
       '@nuxt/ui':
         specifier: 2.18.7
         version: 2.18.7(change-case@5.4.4)(magicast@0.3.5)(rollup@4.24.4)(vite@5.4.10(@types/node@22.9.0)(terser@5.36.0))(vue@3.5.12(typescript@5.6.3))
@@ -63,6 +60,9 @@ importers:
         specifier: 3.23.8
         version: 3.23.8
     devDependencies:
+      '@nuxt/image':
+        specifier: 1.8.1
+        version: 1.8.1(ioredis@5.4.1)(magicast@0.3.5)(rollup@4.24.4)
       '@types/node':
         specifier: ^22.8.7
         version: 22.9.0
