@@ -141,25 +141,20 @@
     >
       {{ analyzeButtonText }}
     </UButton>
-
-    <!-- Results -->
-    <TestResults
-      v-if="results"
-      :results="results"
-      class="mt-8"
-    />
   </UContainer>
 </template>
 
 <script setup lang="ts">
 import { useMaterialsStore } from '~/stores/materials'
+import { storeToRefs } from 'pinia'
 
 const materialsStore = useMaterialsStore()
+const { materials } = storeToRefs(materialsStore)
+
 const selectedMaterial = ref(null)
 const file1 = ref<File | null>(null)
 const file2 = ref<File | null>(null)
 const file2Preview = ref('')
-const results = ref(null)
 const isAnalyzing = ref(false)
 const isSelectMaterialModalOpen = ref(false)
 const searchQuery = ref('')
@@ -171,11 +166,11 @@ onMounted(async () => {
 
 // Filtrer les matières selon la recherche
 const filteredMaterials = computed(() => {
-  if (!searchQuery.value) return materialsStore.materials
+  if (!searchQuery.value) return materials.value
   const query = searchQuery.value.toLowerCase()
-  return materialsStore.materials.filter(material => 
+  return materials.value?.filter(material => 
     material.name.toLowerCase().includes(query)
-  )
+  ) || []
 })
 
 // Computed
@@ -204,17 +199,22 @@ function selectMaterial(material) {
   isSelectMaterialModalOpen.value = false
 }
 
-function onPhotoTaken(imageData: string) {
+async function onPhotoTaken(imageData: string) {
   file2Preview.value = imageData
-  // Convertir le base64 en File
-  const byteString = atob(imageData.split(',')[1])
-  const mimeString = imageData.split(',')[0].split(':')[1].split(';')[0]
-  const ab = new ArrayBuffer(byteString.length)
-  const ia = new Uint8Array(ab)
-  for (let i = 0; i < byteString.length; i++) {
-    ia[i] = byteString.charCodeAt(i)
+  
+  try {
+    // Convertir le base64 en Blob
+    const response = await fetch(imageData)
+    const blob = await response.blob()
+    file2.value = new File([blob], 'photo.jpg', { type: 'image/jpeg' })
+  } catch (error) {
+    console.error('Erreur lors de la conversion de l\'image:', error)
+    useToast().add({
+      title: 'Erreur',
+      description: 'Erreur lors de la capture de la photo',
+      color: 'red'
+    })
   }
-  file2.value = new File([ab], 'photo.jpg', { type: mimeString })
 }
 
 async function analyzeImages() {
@@ -224,9 +224,15 @@ async function analyzeImages() {
     isAnalyzing.value = true
     const formData = new FormData()
     
-    // Ajouter l'ID du matériau et les images
+    // Ajouter l'ID du matériau
     formData.append('materialId', selectedMaterial.value.id)
-    formData.append('file1', selectedMaterial.value.image)
+    
+    // Ajouter l'image originale (URL de l'image du matériau)
+    const materialImageResponse = await fetch(selectedMaterial.value.image)
+    const materialImageBlob = await materialImageResponse.blob()
+    formData.append('file1', materialImageBlob, 'material.jpg')
+    
+    // Ajouter l'image après test
     formData.append('file2', file2.value!)
 
     const response = await $fetch('/api/analyze', {
@@ -235,7 +241,6 @@ async function analyzeImages() {
     })
 
     if (response.success) {
-      // Rediriger vers la page des résultats
       navigateTo(response.redirectTo)
     } else {
       throw new Error(response.error)
@@ -255,5 +260,13 @@ async function analyzeImages() {
   } finally {
     isAnalyzing.value = false
   }
+}
+
+// Types
+interface Material {
+  id: string
+  name: string
+  image: string
+  description?: string
 }
 </script>

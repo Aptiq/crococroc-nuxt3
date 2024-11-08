@@ -39,28 +39,47 @@ export const useMaterialsStore = defineStore('materials', {
 
   actions: {
     async fetchMaterials() {
-      if (this.materials.length > 0) return // Éviter les requêtes inutiles si les données sont déjà chargées
-      
-      this.loading = true
       try {
-        const response = await $fetch('/api/materials')
-        console.log('Fetched materials:', response)
-        this.materials = response
+        this.loading = true
+        this.error = null
+        const { data: response } = await useFetch('/api/materials', {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        
+        if (response.value) {
+          console.log('Fetched materials:', response.value)
+          this.materials = response.value
+        } else {
+          throw new Error('Aucune matière trouvée')
+        }
       } catch (error: any) {
         console.error('Error fetching materials:', error)
         this.error = error.message || 'Erreur lors du chargement des matières'
+        this.materials = []
       } finally {
         this.loading = false
       }
     },
 
     async getMaterial(id: number) {
-      this.loading = true
       try {
-        const response = await $fetch(`/api/materials/${id}`)
-        console.log('Fetched material:', response)
-        this.currentMaterial = response
-        return response
+        this.loading = true
+        this.error = null
+        const { data: response } = await useFetch(`/api/materials/${id}`, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (response.value) {
+          console.log('Fetched material:', response.value)
+          this.currentMaterial = response.value
+          return response.value
+        } else {
+          throw new Error('Matière non trouvée')
+        }
       } catch (error: any) {
         console.error('Error fetching material:', error)
         this.error = error.message || 'Erreur lors du chargement de la matière'
@@ -71,65 +90,64 @@ export const useMaterialsStore = defineStore('materials', {
     },
 
     async createMaterial(data: Partial<Material>) {
-      this.loading = true
       try {
-        console.log('Store: Creating material with data:', {
-          name: data.name,
-          descriptionLength: data.description?.length,
-          imageLength: data.image?.length
-        });
+        this.loading = true
+        this.error = null
+        console.log('Creating material with data:', data)
 
-        const requestBody = {
-          name: data.name || '',
-          description: data.description || '',
-          image: data.image || ''
-        };
-
-        console.log('Store: Request body:', requestBody);
-
-        const response = await $fetch('/api/materials', {
+        const { data: response } = await useFetch('/api/materials', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(requestBody)
-        });
+          body: JSON.stringify({
+            name: data.name || '',
+            description: data.description || '',
+            image: data.image || ''
+          })
+        })
 
-        console.log('Store: Response received:', response);
-        this.materials.push(response);
-        return response;
+        if (response.value) {
+          console.log('Material created:', response.value)
+          this.materials.push(response.value)
+          return response.value
+        } else {
+          throw new Error('Erreur lors de la création de la matière')
+        }
       } catch (error: any) {
-        console.error('Store: Error creating material:', error);
-        this.error = error.message || 'Erreur lors de la création de la matière';
-        throw error;
+        console.error('Error creating material:', error)
+        this.error = error.message || 'Erreur lors de la création de la matière'
+        throw error
       } finally {
-        this.loading = false;
+        this.loading = false
       }
     },
 
     async analyzeMaterial(materialId: number, testImage: File) {
-      this.loading = true
       try {
-        console.log('Analyzing material:', {
-          materialId,
-          hasImage: !!testImage
-        })
+        this.loading = true
+        this.error = null
+        console.log('Analyzing material:', { materialId, hasImage: !!testImage })
 
         const formData = new FormData()
         formData.append('testImage', testImage)
         
-        const response = await $fetch(`/api/materials/${materialId}/analyze`, {
+        const { data: response } = await useFetch(`/api/materials/${materialId}/analyze`, {
           method: 'POST',
           body: formData
         })
-        
-        console.log('Analysis completed:', response)
-        
-        if (this.currentMaterial && this.currentMaterial.id === materialId) {
-          this.currentMaterial.analyses.push(response)
+
+        if (response.value) {
+          console.log('Analysis completed:', response.value)
+          
+          if (this.currentMaterial && this.currentMaterial.id === materialId) {
+            this.currentMaterial.analyses.push(response.value)
+          }
+          
+          return response.value
+        } else {
+          throw new Error('Erreur lors de l\'analyse')
         }
-        
-        return response
       } catch (error: any) {
         console.error('Error analyzing material:', error)
         this.error = error.message || 'Erreur lors de l\'analyse'

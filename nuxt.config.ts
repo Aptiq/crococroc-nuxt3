@@ -1,47 +1,45 @@
 export default defineNuxtConfig({
+  // Date de compatibilité
+  compatibilityDate: '2024-04-03',
+
   // Configuration de base
-  devtools: { enabled: false }, // Désactivé pour éviter les conflits
+  devtools: { enabled: false },
 
   // Configuration du serveur
   server: {
-    maxHeaderSize: 32768
+    maxHeaderSize: 32768 * 4 // Augmenté pour gérer les grandes images
   },
   
   // Variables d'environnement
   runtimeConfig: {
-    // Variables privées (côté serveur uniquement)
     POSTGRES_PRISMA_URL: process.env.POSTGRES_PRISMA_URL,
     POSTGRES_URL_NON_POOLING: process.env.POSTGRES_URL_NON_POOLING,
     AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_ORIGIN: process.env.AUTH_ORIGIN,
     NUXT_SESSION_PASSWORD: process.env.NUXT_SESSION_PASSWORD,
-    
-    // Variables publiques (accessibles côté client)
-    public: {
-      // Ajoutez ici les variables publiques si nécessaire
-    }
+    public: {}
   },
   
   // Modules
   modules: [
     '@nuxt/ui',
+    '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
     '@vueuse/nuxt',
-    '@vite-pwa/nuxt'
+    '@vite-pwa/nuxt',
+    '@nuxt/image' // Ajouté pour le traitement des images
   ],
   
   // Configuration UI
   ui: {
     global: true,
-    icons: ['heroicons']
+    icons: ['heroicons'],
+    safelistColors: ['green', 'red', 'gray'] // Ajouté pour les couleurs des toasts
   },
   
   // Configuration Pinia
   pinia: {
-    autoImports: [
-      'defineStore',
-      'storeToRefs',
-    ]
+    autoImports: ['defineStore', 'storeToRefs']
   },
 
   piniaPersistedstate: {
@@ -49,10 +47,6 @@ export default defineNuxtConfig({
     debug: true
   },
 
-  build: {
-    transpile: ['pinia']
-  },
-  
   // Configuration de l'application
   app: {
     head: {
@@ -68,8 +62,8 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', href: '/pwa-192x192.png' }
       ]
     },
-    pageTransition: { name: 'page', mode: 'out-in' },
-    layoutTransition: { name: 'layout', mode: 'out-in' }
+    pageTransition: false,
+    layoutTransition: false
   },
 
   // Configuration PWA
@@ -101,26 +95,12 @@ export default defineNuxtConfig({
     workbox: {
       navigateFallback: '/',
       globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
-      runtimeCaching: [
-        {
-          urlPattern: /^https:\/\/api\..*\/.*/,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'api-cache',
-            cacheableResponse: {
-              statuses: [0, 200]
-            }
-          }
-        }
-      ]
+      globDirectory: '.output/public',
+      cleanupOutdatedCaches: true
     },
     devOptions: {
       enabled: true,
       type: 'module'
-    },
-    client: {
-      installPrompt: true,
-      periodicSyncForUpdates: 20
     }
   },
 
@@ -128,7 +108,31 @@ export default defineNuxtConfig({
   nitro: {
     compressPublicAssets: true,
     minify: true,
-    compatibilityDate: '2024-04-03'
+    routeRules: {
+      '/api/**': {
+        cors: true,
+        headers: {
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': '*',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
+    }
+  },
+
+  // Configuration Image
+  image: {
+    provider: 'ipx',
+    quality: 80,
+    format: ['webp', 'jpg', 'png', 'jpeg'],
+    screens: {
+      xs: 320,
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+      xxl: 1536
+    }
   },
 
   // Configuration TypeScript
@@ -138,24 +142,48 @@ export default defineNuxtConfig({
     shim: false
   },
 
-  // Configuration expérimentale
-  experimental: {
-    payloadExtraction: false
-  },
-
-  // Règles de routage
-  routeRules: {
-    '/api/**': { cors: true }
-  },
-
-  // Configuration Vite pour résoudre les problèmes d'inspecteur
+  // Configuration Vite
   vite: {
+    build: {
+      target: 'esnext'
+    },
     vue: {
       template: {
         compilerOptions: {
           isCustomElement: (tag) => tag.includes('-')
         }
       }
+    },
+    server: {
+      hmr: {
+        overlay: false
+      }
     }
-  }
+  },
+
+  experimental: {
+    componentIslands: false
+  },
+
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => ['swiper-container', 'swiper-slide'].includes(tag)
+    }
+  },
+
+  build: {
+    transpile: ['swiper']
+  },
+
+  components: {
+    global: true,
+    dirs: ['~/components'],
+    exclude: ['~/components/AnalyzeForm.vue']
+  },
+
+  css: [
+    'swiper/css',
+    'swiper/css/navigation',
+    'swiper/css/pagination'
+  ]
 })

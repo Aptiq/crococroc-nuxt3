@@ -1,4 +1,4 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, createError } from 'h3'
 import prisma from '~/server/utils/prisma'
 
 export default defineEventHandler(async () => {
@@ -8,7 +8,7 @@ export default defineEventHandler(async () => {
         material: true
       },
       orderBy: {
-        createdAt: 'desc'
+        created_at: 'desc'
       }
     })
 

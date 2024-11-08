@@ -1,26 +1,23 @@
-import { prisma } from '~/server/database'
+import { defineEventHandler, createError } from 'h3'
+import prisma from '~/server/utils/prisma'
 
 export default defineEventHandler(async (event) => {
+  const id = event.context.params?.id
+  
+  if (!id) {
+    throw createError({
+      statusCode: 400,
+      message: 'ID manquant'
+    })
+  }
+
   try {
-    const id = event.context.params.id
-    console.log('ID recherché:', id) 
-
-    // Vérifions si prisma est bien initialisé
-    console.log('Prisma client:', !!prisma)
-
     const analysis = await prisma.analysis.findUnique({
       where: { id },
       include: {
-        user: true,
-        comments: {
-          include: {
-            user: true
-          }
-        }
+        material: true
       }
     })
-
-    console.log('Analyse trouvée:', analysis)
 
     if (!analysis) {
       throw createError({
@@ -30,15 +27,12 @@ export default defineEventHandler(async (event) => {
     }
 
     return analysis
-  } catch (error: any) {
-    // Log plus détaillé de l'erreur
-    console.error('Type d\'erreur:', error.constructor.name)
-    console.error('Message d\'erreur:', error.message)
-    console.error('Stack trace:', error.stack)
-    
+
+  } catch (error) {
+    console.error('Erreur lors de la récupération de l\'analyse:', error)
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || 'Erreur serveur interne'
+      statusCode: 500,
+      message: 'Erreur serveur'
     })
   }
 })

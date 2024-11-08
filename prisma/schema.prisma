@@ -4,15 +4,15 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  url = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model Material {
   id          String     @id @default(cuid())
   name        String     @unique
   description String?
-  image       String     // Image en base64
+  image       String     
   created_at  DateTime   @default(now()) @map("created_at")
   updated_at  DateTime   @updatedAt @map("updated_at")
   analyses    Analysis[]
@@ -21,27 +21,24 @@ model Material {
 }
 
 model Analysis {
-  id              String   @id @default(cuid())
-  material_id     String   @map("material_id")
-  material        Material @relation(fields: [material_id], references: [id])
+  id                String   @id @default(cuid())
+  material_id       String   @map("material_id")
+  material          Material @relation(fields: [material_id], references: [id])
   
-  // Image 1 (État initial)
-  image1_gray     String   @map("image1_gray") // Image en base64
-  image1_iso_grade Float   @map("image1_iso_grade")
-  image1_avg_gray Float    @map("image1_avg_gray")
-  image1_resolution String @map("image1_resolution")
+  image1_gray       String   @map("image1_gray")
+  image1_iso_grade  Float    @map("image1_iso_grade")
+  image1_avg_gray   Float    @map("image1_avg_gray")
+  image1_resolution String   @map("image1_resolution")
   
-  // Image 2 (État après test)
-  image2_gray     String   @map("image2_gray") // Image en base64
-  image2_iso_grade Float   @map("image2_iso_grade")
-  image2_avg_gray Float    @map("image2_avg_gray")
-  image2_resolution String @map("image2_resolution")
+  image2_gray       String   @map("image2_gray")
+  image2_iso_grade  Float    @map("image2_iso_grade")
+  image2_avg_gray   Float    @map("image2_avg_gray")
+  image2_resolution String   @map("image2_resolution")
   
-  // Résultat global
-  difference_grade Float   @map("difference_grade")
+  difference_grade  Float    @map("difference_grade")
   
-  created_at      DateTime @default(now()) @map("created_at")
-  updated_at      DateTime @updatedAt @map("updated_at")
+  created_at        DateTime @default(now()) @map("created_at")
+  updated_at        DateTime @updatedAt @map("updated_at")
 
   @@map("analyses")
 }
