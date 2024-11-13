@@ -81,50 +81,46 @@ export default defineNuxtConfig({
 
   // Configuration PWA
   pwa: {
+    registerType: 'autoUpdate',
     manifest: {
       name: 'CrocoCroc',
       short_name: 'CrocoCroc',
-      description: 'CrocoCroc - Votre application de gestion',
-      theme_color: '#2E7D32',
-      background_color: '#ffffff',
-      display: 'standalone',
-      orientation: 'portrait',
-      start_url: '/',
+      description: 'Application d\'analyse de matériaux',
+      theme_color: '#ffffff',
       icons: [
         {
-          src: 'pwa-192x192.png',
-          sizes: '192x192',
-          type: 'image/png',
-          purpose: 'any maskable'
+          src: 'icons/icon-64x64.png',
+          sizes: '64x64',
+          type: 'image/png'
         },
         {
-          src: 'pwa-512x512.png',
+          src: 'icons/icon-144x144.png',
+          sizes: '144x144',
+          type: 'image/png'
+        },
+        {
+          src: 'icons/icon-192x192.png',
+          sizes: '192x192',
+          type: 'image/png'
+        },
+        {
+          src: 'icons/icon-512x512.png',
           sizes: '512x512',
-          type: 'image/png',
-          purpose: 'any maskable'
+          type: 'image/png'
         }
       ]
     },
     workbox: {
-      navigateFallback: '/',
-      globPatterns: [
-        '**/*.{js,css,html,ico,png,svg,woff2}'
-      ],
-      globDirectory: 'dist',
-      cleanupOutdatedCaches: true,
-      dev: {
-        enabled: true,
-        type: 'module',
-        navigateFallback: '/'
-      }
+      navigateFallback: null,
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}']
+    },
+    client: {
+      installPrompt: true,
     },
     devOptions: {
       enabled: true,
+      suppressWarnings: true,
       type: 'module'
-    },
-    disable: process.env.NODE_ENV === 'development',
-    workbox: {
-      enabled: process.env.NODE_ENV === 'production'
     }
   },
 
@@ -141,14 +137,7 @@ export default defineNuxtConfig({
           'Access-Control-Allow-Origin': '*'
         }
       }
-    },
-    publicAssets: [
-      {
-        baseURL: '/',
-        dir: 'public',
-        maxAge: 60 * 60 * 24 * 365 // 1 an
-      }
-    ]
+    }
   },
 
   // Configuration Image

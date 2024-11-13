@@ -10,7 +10,9 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "prisma generate && nuxt prepare",
-    "test": "jest"
+    "test": "jest",
+    "clean": "if exist node_modules rmdir /s /q node_modules && if exist .nuxt rmdir /s /q .nuxt && if exist .output rmdir /s /q .output && if exist pnpm-lock.yaml del pnpm-lock.yaml",
+    "reset": "pnpm clean && pnpm install"
   },
   "dependencies": {
     "@heroicons/vue": "2.1.5",
