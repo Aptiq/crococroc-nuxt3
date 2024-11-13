@@ -89,6 +89,16 @@
         </div>
       </UCard>
     </div>
+
+    <!-- Bouton flottant -->
+    <UButton
+      to="/materials/new"
+      color="primary"
+      variant="solid"
+      size="xl"
+      class="fixed bottom-20 right-4 lg:bottom-8 lg:right-8 shadow-lg rounded-full w-14 h-14 flex items-center justify-center"
+      icon="i-heroicons-plus"
+    />
   </UContainer>
 </template>
 

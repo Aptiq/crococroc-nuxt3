@@ -8,6 +8,16 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
+model User {
+  id              String       @id @default(cuid())
+  email           String       @unique
+  name            String?
+  organization_id String
+  organization    Organization @relation(fields: [organization_id], references: [id])
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+}
+
 model Organization {
   id          String    @id @default(cuid())
   name        String
@@ -35,26 +45,29 @@ model Material {
 }
 
 model Analysis {
-  id                String   @id @default(cuid())
-  material_id       String   @map("material_id")
-  material          Material @relation(fields: [material_id], references: [id])
+  id                String       @id @default(cuid())
+  organization_id   String
+  organization      Organization @relation(fields: [organization_id], references: [id])
+  material_id       String       @map("material_id")
+  material          Material     @relation(fields: [material_id], references: [id])
   
-  image1_gray       String   @map("image1_gray")
-  image1_iso_grade  Float    @map("image1_iso_grade")
-  image1_avg_gray   Float    @map("image1_avg_gray")
-  image1_resolution String   @map("image1_resolution")
+  image1_gray       String       @map("image1_gray")
+  image1_iso_grade  Float        @map("image1_iso_grade")
+  image1_avg_gray   Float        @map("image1_avg_gray")
+  image1_resolution String       @map("image1_resolution")
   
-  image2_gray       String   @map("image2_gray")
-  image2_iso_grade  Float    @map("image2_iso_grade")
-  image2_avg_gray   Float    @map("image2_avg_gray")
-  image2_resolution String   @map("image2_resolution")
+  image2_gray       String       @map("image2_gray")
+  image2_iso_grade  Float        @map("image2_iso_grade")
+  image2_avg_gray   Float        @map("image2_avg_gray")
+  image2_resolution String       @map("image2_resolution")
   
-  difference_grade  Float    @map("difference_grade")
+  difference_grade  Float        @map("difference_grade")
   
-  created_at        DateTime @default(now()) @map("created_at")
-  updated_at        DateTime @updatedAt @map("updated_at")
+  created_at        DateTime     @default(now()) @map("created_at")
+  updated_at        DateTime     @updatedAt @map("updated_at")
 
   @@map("analyses")
   @@index([created_at])
   @@index([material_id])
+  @@index([organization_id])
 }

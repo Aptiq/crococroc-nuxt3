@@ -28,26 +28,21 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@vite-pwa/nuxt',
     '@nuxt/image',
-    '@nuxt/ui',
-    '@nuxtjs/color-mode'
   ],
   
-  // Configuration UI
+  // Configuration UI correcte
   ui: {
     global: true,
-    icons: ['heroicons'],
     safelistColors: ['green', 'red', 'gray'],
+    primary: 'green',
     components: {
-      global: true,
-      dirs: ['~/components']
-    },
-    strategy: 'merge',
-    prefix: 'U'
+      global: true
+    }
   },
   
-  // Configuration Pinia
+  // Configuration Pinia correcte
   pinia: {
-    autoImports: ['defineStore', 'storeToRefs']
+    storesDirs: ['./stores/**']
   },
 
   piniaPersistedstate: {
@@ -114,7 +109,8 @@ export default defineNuxtConfig({
       ]
     },
     workbox: {
-      offlineStrategy: 'NetworkFirst',
+      navigateFallback: null,
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
       runtimeCaching: [
         {
           urlPattern: /^https:\/\/api\.crococroc\.com\/.*$/,
