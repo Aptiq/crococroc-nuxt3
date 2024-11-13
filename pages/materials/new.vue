@@ -43,18 +43,43 @@
         </UForm>
       </UCard>
 
-      <!-- Capture photo -->
+      <!-- Carte de capture photo -->
       <UCard>
         <template #header>
           <h3 class="text-lg font-semibold">Photo de référence</h3>
         </template>
 
         <div class="p-4 space-y-4">
-          <!-- Guide de capture -->
-          <CameraGuide v-if="!imagePreview" />
-          
+          <!-- Prévisualisation vidéo -->
+          <div v-if="!imagePreview" class="relative">
+            <video
+              v-if="stream"
+              ref="videoRef"
+              :srcObject="stream"
+              autoplay
+              playsinline
+              class="w-full aspect-video object-cover rounded-lg"
+            />
+            
+            <!-- Guide de capture -->
+            <CameraGuide 
+              :message="isMobile ? 
+                'Utilisez la caméra arrière de votre téléphone' : 
+                'Utilisez votre webcam pour prendre la photo'"
+            />
+
+            <!-- Message d'erreur caméra -->
+            <UAlert
+              v-if="cameraError"
+              color="red"
+              title="Erreur de caméra"
+              :description="cameraError"
+              class="mt-4"
+            />
+          </div>
+
           <!-- Aperçu de l'image -->
-          <div v-if="imagePreview" class="relative">
+          <div v-else class="relative">
             <img
               :src="imagePreview"
               alt="Aperçu"
@@ -65,7 +90,7 @@
               variant="solid"
               icon="i-heroicons-arrow-path"
               class="absolute top-2 right-2"
-              @click="resetImage"
+              @click="resetCapture"
             >
               Reprendre
             </UButton>
@@ -77,21 +102,11 @@
             block
             color="primary"
             icon="i-heroicons-camera"
-            @click="captureImage"
+            :loading="isCapturing"
+            :disabled="!stream || isCapturing"
+            @click="handleCapture"
           >
-            Prendre la photo
-          </UButton>
-
-          <!-- Bouton de validation -->
-          <UButton
-            v-else
-            block
-            color="primary"
-            :loading="loading"
-            :disabled="!formState.name || !formState.description"
-            @click="onSubmit"
-          >
-            Créer la matière
+            {{ isCapturing ? 'Capture en cours...' : 'Prendre la photo' }}
           </UButton>
         </div>
       </UCard>
@@ -100,12 +115,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-
-definePageMeta({
-  layout: 'default',
-  middleware: ['auth']
-})
+const { stream, error: cameraError, isMobile, startCamera, takePhoto } = useCamera()
+const videoRef = ref<HTMLVideoElement | null>(null)
+const imagePreview = ref<string | null>(null)
+const isCapturing = ref(false)
 
 // État du formulaire
 const formState = ref({
@@ -113,34 +126,66 @@ const formState = ref({
   description: '',
 })
 
-// État de l'image
-const imagePreview = ref<string | null>(null)
-const loading = ref(false)
-
 // Schéma de validation
 const formSchema = {
   name: 'required|min:3',
   description: 'required|min:10'
 }
 
-// Capturer une image
-async function captureImage() {
+// Démarrer la caméra au montage du composant
+onMounted(async () => {
   try {
-    // Implémenter la capture d'image avec la caméra
-    // Utiliser le composant CameraGuide pour les guides
+    await startCamera()
   } catch (error) {
-    console.error('Erreur lors de la capture:', error)
+    useToast().add({
+      title: 'Erreur',
+      description: "Impossible d'accéder à la caméra",
+      color: 'red'
+    })
+  }
+})
+
+// Nettoyer la caméra quand on quitte
+onBeforeUnmount(() => {
+  stream.value?.getTracks().forEach(track => track.stop())
+})
+
+// Gérer la capture
+async function handleCapture() {
+  if (!stream.value) {
+    useToast().add({
+      title: 'Erreur',
+      description: 'La caméra n\'est pas active',
+      color: 'red'
+    })
+    return
+  }
+
+  try {
+    isCapturing.value = true
+    const blob = await takePhoto()
+    if (blob) {
+      imagePreview.value = URL.createObjectURL(blob)
+    } else {
+      throw new Error('Échec de la capture')
+    }
+  } catch (error) {
     useToast().add({
       title: 'Erreur',
       description: 'Impossible de capturer l\'image',
       color: 'red'
     })
+  } finally {
+    isCapturing.value = false
   }
 }
 
-// Réinitialiser l'image
-function resetImage() {
+// Réinitialiser la capture
+async function resetCapture() {
   imagePreview.value = null
+  if (!stream.value) {
+    await startCamera()
+  }
 }
 
 // Soumettre le formulaire
@@ -155,8 +200,6 @@ async function onSubmit() {
   }
 
   try {
-    loading.value = true
-
     // Créer un FormData pour l'upload
     const formData = new FormData()
     formData.append('name', formState.value.name)
@@ -179,8 +222,6 @@ async function onSubmit() {
       description: 'Impossible de créer la matière',
       color: 'red'
     })
-  } finally {
-    loading.value = false
   }
 }
 </script>

@@ -1,0 +1,31 @@
+# Instructions pour Cursor AI
+
+## Environnement de développement
+- OS: Windows
+- Shell: PowerShell
+- Package Manager: PNPM
+- Node Version: 18+
+
+## Stack technique
+- Framework: Nuxt 3
+- UI Framework: Nuxt UI (pas UI Pro)
+  - Utiliser les composants avec préfixe 'U'
+  - Suivre la documentation officielle
+- Database ORM: Prisma avec PostgreSQL
+- State Management: Pinia avec persistance
+- Styling: TailwindCSS
+- Type Safety: TypeScript
+
+## Conventions de code
+1. Composants Nuxt UI avec préfixe 'U'
+2. TypeScript strict avec `<script setup lang="ts">`
+3. TailwindCSS pour tous les styles
+4. Nommage kebab-case pour les fichiers
+5. API routes dans `server/api/`
+6. Types dans `types/index.ts`
+
+## Commandes PowerShell
+- Développement: `pnpm dev`
+- Build: `pnpm build`
+- Clean: `pnpm clean`
+- Reset: `pnpm reset` 
