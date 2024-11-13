@@ -1,290 +1,234 @@
 <template>
-  <UContainer class="py-6">
-    <UPageHeader
-      title="Tableau de bord"
-      description="Bienvenue sur CrocoCroc"
-    >
-      <template #right>
-        <div class="flex gap-2">
+  <div class="py-6">
+    <div class="container mx-auto px-4">
+      <!-- En-tête avec boutons -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h1 class="text-2xl font-bold">Tableau de bord</h1>
+          <p class="text-gray-600">Bienvenue sur CrocoCroc</p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <UButton
             to="/analyses/new"
             color="primary"
-            icon="i-heroicons-camera"
+            icon="i-heroicons-plus"
+            class="w-full sm:w-auto"
           >
             Nouvelle analyse
           </UButton>
           <UButton
             to="/materials/new"
             color="gray"
-            variant="soft"
+            variant="ghost"
             icon="i-heroicons-plus"
+            class="w-full sm:w-auto"
           >
             Nouvelle matière
           </UButton>
         </div>
-      </template>
-    </UPageHeader>
+      </div>
 
-    <!-- Statistiques -->
-    <div class="grid md:grid-cols-3 gap-4 mt-8">
-      <UCard
-        v-for="(stat, index) in stats"
-        :key="index"
-      >
-        <template #header>
-          <h3 class="text-base font-semibold">{{ stat.label }}</h3>
-        </template>
-        <p class="text-2xl font-bold">{{ stat.value }}</p>
-      </UCard>
-    </div>
-
-    <!-- Dernières matières -->
-    <UCard class="mt-6">
-      <template #header>
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold">Dernières matières</h3>
-          <div class="flex gap-2">
-            <UButton
-              to="/materials/new"
-              color="gray"
-              variant="ghost"
-              icon="i-heroicons-plus"
-              size="sm"
-            />
-            <UButton
-              to="/materials"
-              color="gray"
-              variant="ghost"
-              icon="i-heroicons-arrow-right"
-              size="sm"
-            >
-              Voir tout
-            </UButton>
+      <!-- Statistiques -->
+      <div class="grid gap-4 mb-6 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
+        <UCard class="col-span-1">
+          <div class="flex items-start gap-4">
+            <div class="p-2 bg-primary-50 dark:bg-primary-950 rounded-lg">
+              <UIcon name="i-heroicons-square-3-stack-3d" class="w-6 h-6 text-primary-500" />
+            </div>
+            <div>
+              <div class="text-sm text-gray-500">Matières</div>
+              <div class="text-xl sm:text-2xl font-semibold">{{ stats?.materialsCount || 0 }}</div>
+            </div>
           </div>
-        </div>
-      </template>
+        </UCard>
 
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-        <UCard
-          v-for="material in recentMaterials"
-          :key="material.id"
-          class="hover:shadow-lg transition-shadow duration-200"
-          @click="navigateTo(`/materials/${material.id}`)"
-        >
-          <div class="relative">
-            <img
-              v-if="material.image"
-              :src="material.image"
-              :alt="material.name"
-              class="w-full h-40 object-cover rounded-t-lg"
-            />
-            <UBadge
-              :color="material.hasAnalysis ? 'green' : 'yellow'"
-              variant="subtle"
-              class="absolute top-2 right-2"
-            >
-              {{ material.hasAnalysis ? 'Analysé' : 'Non analysé' }}
-            </UBadge>
+        <UCard class="col-span-1">
+          <div class="flex items-start gap-4">
+            <div class="p-2 bg-primary-50 dark:bg-primary-950 rounded-lg">
+              <UIcon name="i-heroicons-chart-bar" class="w-6 h-6 text-primary-500" />
+            </div>
+            <div>
+              <div class="text-sm text-gray-500">Analyses</div>
+              <div class="text-xl sm:text-2xl font-semibold">{{ stats?.analysesCount || 0 }}</div>
+            </div>
           </div>
+        </UCard>
 
-          <div class="p-4">
-            <h3 class="font-semibold">{{ material.name }}</h3>
-            <p class="text-sm text-gray-500 mt-1 line-clamp-2">
-              {{ material.description }}
-            </p>
+        <UCard class="col-span-1">
+          <div class="flex items-start gap-4">
+            <div class="p-2 bg-primary-50 dark:bg-primary-950 rounded-lg">
+              <UIcon name="i-heroicons-clock" class="w-6 h-6 text-primary-500" />
+            </div>
+            <div>
+              <div class="text-sm text-gray-500">Ce mois</div>
+              <div class="text-xl sm:text-2xl font-semibold">{{ stats?.analysesThisMonth || 0 }}</div>
+            </div>
+          </div>
+        </UCard>
+
+        <UCard class="col-span-1">
+          <div class="flex items-start gap-4">
+            <div class="p-2 bg-primary-50 dark:bg-primary-950 rounded-lg">
+              <UIcon name="i-heroicons-star" class="w-6 h-6 text-primary-500" />
+            </div>
+            <div>
+              <div class="text-sm text-gray-500">Note moyenne</div>
+              <div class="text-xl sm:text-2xl font-semibold">{{ (stats?.averageGrade || 0).toFixed(1) }}/5</div>
+            </div>
           </div>
         </UCard>
       </div>
-    </UCard>
 
-    <!-- Dernières analyses -->
-    <UCard class="mt-6">
-      <template #header>
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold">Dernières analyses</h3>
-          <div class="flex gap-2">
-            <UButton
-              to="/analyses/new"
-              color="gray"
-              variant="ghost"
-              icon="i-heroicons-plus"
-              size="sm"
-            />
-            <UButton
-              to="/analyses"
-              color="gray"
-              variant="ghost"
-              icon="i-heroicons-arrow-right"
-              size="sm"
-            >
-              Voir tout
-            </UButton>
-          </div>
-        </div>
-      </template>
-
-      <div v-if="analysesLoading" class="py-4">
-        <USkeleton class="h-32" />
-      </div>
-
-      <div v-else-if="!recentAnalyses?.length" class="py-8 text-center text-gray-500">
-        Aucune analyse récente
-      </div>
-
-      <UTable
-        v-else
-        :rows="recentAnalyses"
-        :columns="columns"
-        :ui="{
-          thead: 'bg-gray-50 dark:bg-gray-800/50',
-          td: {
-            base: 'whitespace-nowrap py-3 px-4'
-          }
-        }"
-      >
-        <template #material-data="{ row }">
-          <div class="flex items-center gap-3">
-            <img
-              v-if="row.material?.image"
-              :src="row.material.image"
-              :alt="row.material.name"
-              class="w-10 h-10 rounded object-cover"
-            />
-            <span>{{ row.material?.name }}</span>
+      <!-- Dernières analyses -->
+      <UCard class="mb-6">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Dernières analyses</h3>
+            <div class="flex gap-2">
+              <UButton
+                to="/analyses/new"
+                color="primary"
+                variant="ghost"
+                icon="i-heroicons-plus"
+                size="sm"
+                class="hidden sm:flex"
+              >
+                Nouvelle
+              </UButton>
+              <UButton
+                to="/analyses"
+                color="gray"
+                variant="ghost"
+                icon="i-heroicons-arrow-right"
+                size="sm"
+              >
+                Voir tout
+              </UButton>
+            </div>
           </div>
         </template>
 
-        <template #grade-data="{ row }">
-          <UBadge
-            :color="getGradeColor(row.difference_grade)"
-            class="min-w-[60px] justify-center"
+        <div class="overflow-x-auto">
+          <UTable
+            :rows="recentAnalyses || []"
+            :columns="[
+              {
+                key: 'material',
+                label: 'Matière'
+              },
+              {
+                key: 'grade',
+                label: 'Note'
+              },
+              {
+                key: 'date',
+                label: 'Date',
+                class: 'hidden sm:table-cell'
+              }
+            ]"
           >
-            {{ row.difference_grade?.toFixed(1) }}
-          </UBadge>
+            <template #material-data="{ row }">
+              <div class="flex items-center gap-3">
+                <img
+                  :src="row.material.image"
+                  :alt="row.material.name"
+                  class="w-10 h-10 rounded object-cover"
+                />
+                <span class="font-medium line-clamp-1">{{ row.material.name }}</span>
+              </div>
+            </template>
+
+            <template #grade-data="{ row }">
+              <UBadge
+                :color="getGradeColor(row.difference_grade)"
+                size="lg"
+              >
+                {{ row.difference_grade.toFixed(1) }}
+              </UBadge>
+            </template>
+
+            <template #date-data="{ row }">
+              {{ formatDate(row.created_at) }}
+            </template>
+          </UTable>
+        </div>
+      </UCard>
+
+      <!-- Dernières matières -->
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Dernières matières</h3>
+            <div class="flex gap-2">
+              <UButton
+                to="/materials/new"
+                color="primary"
+                variant="ghost"
+                icon="i-heroicons-plus"
+                size="sm"
+                class="hidden sm:flex"
+              >
+                Nouvelle
+              </UButton>
+              <UButton
+                to="/materials"
+                color="gray"
+                variant="ghost"
+                icon="i-heroicons-arrow-right"
+                size="sm"
+              >
+                Voir tout
+              </UButton>
+            </div>
+          </div>
         </template>
 
-        <template #date-data="{ row }">
-          {{ formatDate(row.created_at) }}
-        </template>
-
-        <template #actions-data="{ row }">
-          <UButton
-            color="gray"
-            variant="ghost"
-            icon="i-heroicons-eye"
-            :to="`/analyses/${row.id}`"
-          />
-        </template>
-      </UTable>
-    </UCard>
-  </UContainer>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <UCard
+            v-for="material in recentMaterials"
+            :key="material.id"
+            class="hover:shadow-lg transition-shadow"
+          >
+            <div class="aspect-w-16 aspect-h-9 mb-4">
+              <img
+                :src="material.image"
+                :alt="material.name"
+                class="object-cover rounded-lg w-full h-full"
+              />
+            </div>
+            <h4 class="font-medium line-clamp-1">{{ material.name }}</h4>
+            <p class="text-sm text-gray-500 line-clamp-2">{{ material.description }}</p>
+          </UCard>
+        </div>
+      </UCard>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  layout: 'default',
-  middleware: ['auth']
-})
+// Récupérer les statistiques
+const { data: stats } = await useFetch('/api/dashboard/stats')
 
-// Chargement des données avec gestion des erreurs
-const { data: recentMaterials, pending: materialsLoading, error: materialsError } = await useFetch('/api/materials/recent', {
-  default: () => [],
-  onResponseError: (error) => {
-    console.error('Erreur lors du chargement des matières:', error)
-    useToast().add({
-      title: 'Erreur',
-      description: 'Impossible de charger les matières',
-      color: 'red'
-    })
-  }
-})
+// Récupérer les analyses récentes
+const { data: recentAnalyses } = await useFetch('/api/analyses/recent')
+console.log('Recent analyses:', recentAnalyses.value)
 
-const { data: recentAnalyses, pending: analysesLoading, error: analysesError } = await useFetch('/api/analyses/recent', {
-  default: () => [],
-  onResponseError: (error) => {
-    console.error('Erreur lors du chargement des analyses:', error)
-    useToast().add({
-      title: 'Erreur',
-      description: 'Impossible de charger les analyses',
-      color: 'red'
-    })
-  }
-})
-
-const { data: dashboardStats, pending: statsLoading, error: dashboardError } = await useFetch('/api/dashboard/stats', {
-  default: () => ({
-    materialsCount: 0,
-    analysesCount: 0,
-    averageGrade: 0
-  })
-})
-
-// Stats avec gestion du chargement
-const stats = computed(() => [
-  {
-    label: 'Matières enregistrées',
-    value: statsLoading.value ? '-' : dashboardStats.value.materialsCount,
-  },
-  {
-    label: 'Analyses effectuées',
-    value: statsLoading.value ? '-' : dashboardStats.value.analysesCount,
-  },
-  {
-    label: 'Note moyenne',
-    value: statsLoading.value ? '-' : 
-      Number(dashboardStats.value.averageGrade).toFixed(1),
-  }
-])
-
-// Gestion des erreurs
-watch([materialsError, analysesError, dashboardError], (errors) => {
-  const activeErrors = errors.filter(Boolean)
-  if (activeErrors.length > 0) {
-    useToast().add({
-      title: 'Erreur',
-      description: 'Impossible de charger certaines données',
-      color: 'red'
-    })
-  }
-})
-
-// Colonnes pour le tableau des analyses récentes
-const columns = [
-  {
-    key: 'material',
-    label: 'Matière'
-  },
-  {
-    key: 'grade',
-    label: 'Note',
-    slot: 'grade'
-  },
-  {
-    key: 'date',
-    label: 'Date',
-    slot: 'date'
-  },
-  {
-    key: 'actions',
-    label: '',
-    sortable: false
-  }
-]
+// Récupérer les matières récentes
+const { data: recentMaterials } = await useFetch('/api/materials/recent')
 
 // Fonction pour formater la date
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('fr-FR', {
     day: 'numeric',
-    month: 'short',
-    year: 'numeric'
+    month: 'short'
   })
 }
 
-// Fonction pour déterminer la couleur du badge selon la note
+// Fonction pour déterminer la couleur selon la note
 function getGradeColor(grade: number) {
   if (!grade) return 'gray'
-  if (grade >= 8) return 'green'
-  if (grade >= 5) return 'yellow'
+  if (grade >= 4) return 'green'
+  if (grade >= 2.5) return 'yellow'
   return 'red'
 }
 </script>

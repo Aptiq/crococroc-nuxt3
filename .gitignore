@@ -54,3 +54,7 @@ Thumbs.db
 build/
 dist/
 out/
+
+# Dossier des uploads
+public/uploads/*
+!public/uploads/.gitkeep

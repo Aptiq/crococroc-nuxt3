@@ -33,11 +33,8 @@ export default defineNuxtConfig({
   // Configuration UI correcte
   ui: {
     global: true,
-    safelistColors: ['green', 'red', 'gray'],
-    primary: 'green',
-    components: {
-      global: true
-    }
+    icons: ['heroicons'],
+    safelistColors: ['green', 'red', 'gray', 'yellow', 'blue'],
   },
   
   // Configuration Pinia correcte
@@ -56,9 +53,11 @@ export default defineNuxtConfig({
       title: 'CrocoCroc',
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' },
         { name: 'description', content: 'CrocoCroc - Votre application de gestion' },
-        { name: 'theme-color', content: '#2E7D32' }
+        { name: 'theme-color', content: '#2E7D32' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'default' }
       ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
@@ -80,46 +79,48 @@ export default defineNuxtConfig({
     manifest: {
       name: 'CrocoCroc',
       short_name: 'CrocoCroc',
-      description: 'Analyse de solidité des couleurs ISO 105-A02',
-      theme_color: '#2E7D32',
+      description: 'Application d\'analyse de matériaux',
+      theme_color: '#ffffff',
       background_color: '#ffffff',
       display: 'standalone',
       orientation: 'portrait',
+      scope: '/',
+      start_url: '/',
       icons: [
         {
-          src: 'icons/icon-64x64.png',
-          sizes: '64x64',
-          type: 'image/png'
-        },
-        {
-          src: 'icons/icon-144x144.png',
-          sizes: '144x144',
-          type: 'image/png'
-        },
-        {
-          src: 'icons/icon-192x192.png',
+          src: 'pwa-192x192.png',
           sizes: '192x192',
           type: 'image/png'
         },
         {
-          src: 'icons/icon-512x512.png',
+          src: 'pwa-512x512.png',
           sizes: '512x512',
           type: 'image/png'
+        },
+        {
+          src: 'pwa-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable'
         }
       ]
     },
     workbox: {
-      navigateFallback: null,
+      navigateFallback: '/',
       globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
       runtimeCaching: [
         {
-          urlPattern: /^https:\/\/api\.crococroc\.com\/.*$/,
+          urlPattern: /^https:\/\/api\./,
           handler: 'NetworkFirst',
           options: {
             cacheName: 'api-cache',
+            networkTimeoutSeconds: 5,
             expiration: {
-              maxEntries: 100,
+              maxEntries: 50,
               maxAgeSeconds: 60 * 60 * 24 // 24 heures
+            },
+            cacheableResponse: {
+              statuses: [0, 200]
             }
           }
         }

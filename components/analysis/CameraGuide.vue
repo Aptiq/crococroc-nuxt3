@@ -28,4 +28,25 @@ const defaultMessage = computed(() =>
     'Utilisez la caméra arrière de votre téléphone' : 
     'Utilisez votre webcam pour prendre la photo'
 )
+
+// Ajouter les propriétés manquantes
+const isPositionValid = ref(true)
+const isLightValid = ref(true)
+const isDistanceValid = ref(true)
+const isAngleValid = ref(true)
+const lightStatus = ref('OK')
+const distanceStatus = ref('OK')
+const angleStatus = ref('OK')
+const allConditionsValid = computed(() => 
+  isPositionValid.value && 
+  isLightValid.value && 
+  isDistanceValid.value && 
+  isAngleValid.value
+)
+const helpMessage = computed(() => {
+  if (!isLightValid.value) return 'Améliorez l\'éclairage'
+  if (!isDistanceValid.value) return 'Ajustez la distance'
+  if (!isAngleValid.value) return 'Corrigez l\'angle'
+  return 'Position correcte'
+})
 </script> 

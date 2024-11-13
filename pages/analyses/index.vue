@@ -1,221 +1,187 @@
 <template>
-  <UContainer class="py-6">
-    <UPageHeader
-      title="Analyses"
-      description="Historique des analyses effectuées"
-    >
-      <template #right>
+  <div class="py-6">
+    <div class="container mx-auto px-4">
+      <!-- En-tête avec bouton -->
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h1 class="text-2xl font-bold">Analyses</h1>
+          <p class="text-gray-600">Historique des analyses effectuées</p>
+        </div>
         <UButton
-          to="/analyze"
+          to="/analyses/new"
           color="primary"
-          icon="i-heroicons-camera"
+          icon="i-heroicons-plus"
         >
           Nouvelle analyse
         </UButton>
-      </template>
-    </UPageHeader>
-
-    <!-- Filtres -->
-    <div class="mt-6 space-y-4">
-      <UInput
-        v-model="search"
-        icon="i-heroicons-magnifying-glass"
-        placeholder="Rechercher une analyse..."
-        class="max-w-md"
-      />
-      
-      <div class="flex gap-4">
-        <USelect
-          v-model="sortBy"
-          :options="sortOptions"
-          placeholder="Trier par"
-          class="w-48"
-        />
-        <UButton
-          :icon="sortDirection === 'asc' ? 'i-heroicons-arrow-up' : 'i-heroicons-arrow-down'"
-          color="gray"
-          variant="ghost"
-          @click="toggleSortDirection"
-        />
       </div>
-    </div>
 
-    <div class="mt-6">
+      <!-- Filtres et recherche -->
+      <div class="mb-6 space-y-4">
+        <div class="flex gap-4 flex-wrap">
+          <UInput
+            v-model="search"
+            icon="i-heroicons-magnifying-glass"
+            placeholder="Rechercher une analyse..."
+            size="lg"
+            class="flex-1 min-w-[200px]"
+          />
+          <USelect
+            v-model="gradeFilter"
+            :options="gradeOptions"
+            placeholder="Note"
+            size="lg"
+            class="w-48"
+          />
+          <USelect
+            v-model="sort"
+            :options="sortOptions"
+            placeholder="Trier par"
+            size="lg"
+            class="w-48"
+          />
+        </div>
+      </div>
+
+      <!-- Liste des analyses -->
       <UCard>
+        <div v-if="!filteredAnalyses.length" class="text-center py-12">
+          <UIcon name="i-heroicons-chart-bar" class="w-12 h-12 mx-auto text-gray-400" />
+          <h3 class="mt-2 text-sm font-semibold text-gray-900">Aucune analyse trouvée</h3>
+          <p class="mt-1 text-sm text-gray-500">Commencez par analyser une matière.</p>
+        </div>
+
         <UTable
+          v-else
           :rows="filteredAnalyses"
           :columns="columns"
-          :loading="pending"
+          :sort="{ column: 'created_at', direction: 'desc' }"
         >
-          <!-- Template pour le nom de la matière -->
           <template #material-data="{ row }">
             <div class="flex items-center gap-3">
               <img
-                v-if="row.material?.image"
                 :src="row.material.image"
                 :alt="row.material.name"
                 class="w-10 h-10 rounded object-cover"
               />
-              <span>{{ row.material?.name || 'N/A' }}</span>
+              <div>
+                <div class="font-medium">{{ row.material.name }}</div>
+                <div class="text-sm text-gray-500">{{ formatDate(row.created_at) }}</div>
+              </div>
             </div>
           </template>
 
-          <!-- Template pour la date -->
-          <template #createdAt-data="{ row }">
-            {{ formatDate(row.created_at) }}
-          </template>
-
-          <!-- Template pour la note -->
-          <template #note-data="{ row }">
+          <template #grade-data="{ row }">
             <UBadge
-              :color="getNoteColor(row.difference_grade)"
-              :label="row.difference_grade?.toFixed(1) || 'N/A'"
-              variant="solid"
-            />
-          </template>
-
-          <!-- Template pour les actions -->
-          <template #actions-data="{ row }">
-            <UButton
-              :to="`/analyses/${row.id}`"
-              color="gray"
-              variant="ghost"
-              icon="i-heroicons-eye"
-            />
+              :color="getGradeColor(row.difference_grade)"
+              size="lg"
+            >
+              {{ row.difference_grade.toFixed(1) }}
+            </UBadge>
           </template>
         </UTable>
       </UCard>
     </div>
-
-    <!-- Bouton flottant -->
-    <UButton
-      to="/analyses/new"
-      color="primary"
-      variant="solid"
-      size="xl"
-      class="fixed bottom-20 right-4 lg:bottom-8 lg:right-8 shadow-lg rounded-full w-14 h-14 flex items-center justify-center"
-      icon="i-heroicons-camera"
-    />
-  </UContainer>
+  </div>
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  layout: 'default',
-  middleware: ['auth']
-})
-
-// États
 const search = ref('')
-const sortBy = ref('created_at')
-const sortDirection = ref<'asc' | 'desc'>('desc')
+const gradeFilter = ref('')
+const sort = ref('recent')
+
+// Options de filtrage par note
+const gradeOptions = [
+  { label: 'Toutes les notes', value: '' },
+  { label: 'Excellentes (≥4)', value: 'excellent' },
+  { label: 'Moyennes (2.5-4)', value: 'average' },
+  { label: 'Faibles (<2.5)', value: 'poor' }
+]
 
 // Options de tri
 const sortOptions = [
-  { label: 'Date de création', value: 'created_at' },
-  { label: 'Matière', value: 'material.name' },
-  { label: 'Note', value: 'difference_grade' }
+  { label: 'Plus récentes', value: 'recent' },
+  { label: 'Plus anciennes', value: 'old' },
+  { label: 'Note croissante', value: 'grade_asc' },
+  { label: 'Note décroissante', value: 'grade_desc' }
 ]
 
-// Récupérer les analyses depuis l'API
-const { data: analyses, pending } = await useFetch('/api/analyses', {
-  default: () => [],
-  onResponseError: (error) => {
-    console.error('Erreur lors du chargement des analyses:', error)
-    useToast().add({
-      title: 'Erreur',
-      description: 'Impossible de charger les analyses',
-      color: 'red'
-    })
-  }
-})
-
+// Colonnes pour le tableau
 const columns = [
   {
     key: 'material',
-    label: 'Matière'
+    label: 'Matière',
+    sortable: true
   },
   {
-    key: 'note',
-    label: 'Note'
-  },
-  {
-    key: 'createdAt',
-    label: 'Date de création'
-  },
-  {
-    key: 'actions',
-    label: 'Actions'
+    key: 'grade',
+    label: 'Note',
+    sortable: true
   }
 ]
 
-// Fonction pour formater la date
-const formatDate = (dateString: string) => {
-  if (!dateString) return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
-  })
-}
+// Récupérer les analyses
+const { data: analyses } = await useFetch('/api/analyses')
 
-// Fonction pour déterminer la couleur du badge selon la note
-const getNoteColor = (note: number) => {
-  if (!note) return 'gray'
-  if (note >= 4) return 'green'
-  if (note >= 2) return 'yellow'
-  return 'red'
-}
-
-// Inverser la direction du tri
-function toggleSortDirection() {
-  sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-}
-
-// Filtrage et tri des analyses
+// Filtrer et trier les analyses
 const filteredAnalyses = computed(() => {
   if (!analyses.value) return []
   
   let filtered = [...analyses.value]
-  
-  // Filtrage par recherche
+
+  // Appliquer le filtre de recherche
   if (search.value) {
     const searchLower = search.value.toLowerCase()
-    filtered = filtered.filter(analysis => 
-      analysis.material?.name?.toLowerCase().includes(searchLower) ||
-      analysis.difference_grade?.toString().includes(searchLower)
+    filtered = filtered.filter(analysis =>
+      analysis.material.name.toLowerCase().includes(searchLower)
     )
   }
-  
-  // Tri
-  filtered.sort((a, b) => {
-    let aValue = a[sortBy.value]
-    let bValue = b[sortBy.value]
-    
-    // Gestion spéciale pour le tri par nom de matière
-    if (sortBy.value === 'material.name') {
-      aValue = a.material?.name || ''
-      bValue = b.material?.name || ''
-    }
-    
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortDirection.value === 'asc' 
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue)
-    }
-    
-    return sortDirection.value === 'asc' 
-      ? Number(aValue) - Number(bValue)
-      : Number(bValue) - Number(aValue)
-  })
-  
+
+  // Appliquer le filtre de note
+  switch (gradeFilter.value) {
+    case 'excellent':
+      filtered = filtered.filter(a => a.difference_grade >= 4)
+      break
+    case 'average':
+      filtered = filtered.filter(a => a.difference_grade >= 2.5 && a.difference_grade < 4)
+      break
+    case 'poor':
+      filtered = filtered.filter(a => a.difference_grade < 2.5)
+      break
+  }
+
+  // Appliquer le tri
+  switch (sort.value) {
+    case 'old':
+      filtered.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      break
+    case 'grade_asc':
+      filtered.sort((a, b) => a.difference_grade - b.difference_grade)
+      break
+    case 'grade_desc':
+      filtered.sort((a, b) => b.difference_grade - a.difference_grade)
+      break
+    default: // 'recent'
+      filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  }
+
   return filtered
 })
 
-// Debug logs
-watchEffect(() => {
-  console.log('Analyses count:', analyses.value?.length)
-  console.log('Filtered count:', filteredAnalyses.value.length)
-})
+// Fonction pour formater la date
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  })
+}
+
+// Fonction pour déterminer la couleur selon la note
+function getGradeColor(grade: number) {
+  if (!grade) return 'gray'
+  if (grade >= 4) return 'green'
+  if (grade >= 2.5) return 'yellow'
+  return 'red'
+}
 </script>

@@ -1,10 +1,12 @@
 <template>
   <UContainer class="py-6">
-    <UPageHeader
-      title="Nouvelle matière"
-      description="Ajoutez une nouvelle matière à analyser"
-    >
-      <template #right>
+    <!-- En-tête -->
+    <UCard class="mb-6">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-bold">Nouvelle matière</h1>
+          <p class="text-gray-600">Ajoutez une nouvelle matière à analyser</p>
+        </div>
         <UButton
           to="/materials"
           color="gray"
@@ -13,61 +15,18 @@
         >
           Retour aux matières
         </UButton>
-      </template>
-    </UPageHeader>
+      </div>
+    </UCard>
 
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Informations de la matière -->
-      <UCard>
-        <template #header>
-          <h3 class="text-lg font-semibold">Informations</h3>
-        </template>
-
-        <UForm
-          :schema="formSchema"
-          :state="formState"
-          class="p-4"
-        >
-          <div class="space-y-6">
-            <!-- Nom de la matière -->
-            <UFormGroup label="Nom" name="name">
-              <UInput v-model="formState.name" />
-            </UFormGroup>
-
-            <!-- Description -->
-            <UFormGroup label="Description" name="description">
-              <UTextarea v-model="formState.description" />
-            </UFormGroup>
-
-            <!-- Bouton pour activer la caméra -->
-            <UButton
-              v-if="!isCameraActive && !imagePreview && isFormValid"
-              block
-              color="primary"
-              icon="i-heroicons-camera"
-              @click="startCamera"
-            >
-              Prendre une photo
-            </UButton>
-          </div>
-        </UForm>
-      </UCard>
-
-      <!-- Carte de capture photo -->
+    <!-- Contenu -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Capture photo -->
       <UCard>
         <template #header>
           <h3 class="text-lg font-semibold">Photo de référence</h3>
         </template>
 
         <div class="p-4 space-y-4">
-          <!-- Message si formulaire incomplet -->
-          <UAlert
-            v-if="!isFormValid && !imagePreview"
-            color="yellow"
-            title="Information requise"
-            description="Veuillez d'abord remplir le nom et la description de la matière"
-          />
-
           <!-- Prévisualisation vidéo -->
           <div v-if="isCameraActive && !imagePreview" class="relative">
             <video
@@ -110,7 +69,7 @@
           </div>
 
           <!-- Aperçu de l'image -->
-          <div v-if="imagePreview" class="relative">
+          <div v-else-if="imagePreview" class="relative">
             <img
               :src="imagePreview"
               alt="Aperçu"
@@ -126,6 +85,42 @@
               Reprendre
             </UButton>
           </div>
+
+          <!-- Bouton pour démarrer la caméra -->
+          <UButton
+            v-else
+            block
+            color="primary"
+            icon="i-heroicons-camera"
+            @click="startCamera"
+          >
+            Prendre une photo
+          </UButton>
+        </div>
+      </UCard>
+
+      <!-- Informations de la matière -->
+      <UCard>
+        <template #header>
+          <h3 class="text-lg font-semibold">Informations</h3>
+        </template>
+
+        <div class="p-4 space-y-6">
+          <!-- Nom de la matière -->
+          <UFormGroup label="Nom de la matière">
+            <UInput
+              v-model="formState.name"
+              placeholder="Ex: Coton 100%"
+            />
+          </UFormGroup>
+
+          <!-- Description -->
+          <UFormGroup label="Description">
+            <UTextarea
+              v-model="formState.description"
+              placeholder="Description détaillée de la matière..."
+            />
+          </UFormGroup>
         </div>
       </UCard>
     </div>
@@ -145,6 +140,7 @@
 </template>
 
 <script setup lang="ts">
+const toast = useToast()
 const { stream, error: cameraError, isMobile, startCamera: initCamera, takePhoto } = useCamera()
 const videoRef = ref<HTMLVideoElement | null>(null)
 const imagePreview = ref<string | null>(null)
@@ -158,34 +154,13 @@ const formState = ref({
   description: '',
 })
 
-// Schéma de validation
-const formSchema = {
-  name: 'required|min:3',
-  description: 'required|min:10'
-}
-
-// Vérifier si le formulaire est valide
-const isFormValid = computed(() => {
-  return formState.value.name.length >= 3 && 
-         formState.value.description.length >= 10
-})
-
 // Vérifier si on peut sauvegarder
 const canSave = computed(() => {
-  return isFormValid.value && imagePreview.value
+  return imagePreview.value && formState.value.name.trim() !== ''
 })
 
 // Démarrer la caméra
 async function startCamera() {
-  if (!isFormValid.value) {
-    useToast().add({
-      title: 'Erreur',
-      description: 'Veuillez d\'abord remplir le formulaire',
-      color: 'red'
-    })
-    return
-  }
-
   try {
     isCameraActive.value = true
     await initCamera()
@@ -245,11 +220,14 @@ async function resetCapture() {
 
 // Sauvegarder la matière
 async function saveMaterial() {
-  if (!canSave.value) {
-    useToast().add({
+  if (!imagePreview.value) {
+    toast.add({
+      id: 'error-photo',
       title: 'Erreur',
-      description: 'Veuillez remplir tous les champs et prendre une photo',
-      color: 'red'
+      description: 'Veuillez prendre une photo',
+      color: 'red',
+      icon: 'i-heroicons-exclamation-circle',
+      timeout: 5000
     })
     return
   }
@@ -257,33 +235,54 @@ async function saveMaterial() {
   try {
     isSaving.value = true
 
-    // Créer un FormData pour l'upload
+    // Créer un FormData
     const formData = new FormData()
     formData.append('name', formState.value.name)
-    formData.append('description', formState.value.description)
-    formData.append('image', imagePreview.value)
+    formData.append('description', formState.value.description || '')
+
+    // Convertir l'image base64 en blob
+    const base64Response = await fetch(imagePreview.value)
+    const blob = await base64Response.blob()
+    formData.append('image', blob, 'image.jpg')
 
     // Envoyer la requête
-    await $fetch('/api/materials', {
+    const response = await $fetch<{ error?: string, success?: boolean }>('/api/materials', {
       method: 'POST',
       body: formData
     })
 
-    useToast().add({
+    if (response.error) {
+      toast.add({
+        id: 'error-create',
+        title: 'Erreur',
+        description: response.error,
+        color: 'red',
+        icon: 'i-heroicons-exclamation-circle',
+        timeout: 5000
+      })
+      return
+    }
+
+    toast.add({
+      id: 'success-create',
       title: 'Succès',
       description: 'Matière créée avec succès',
-      color: 'green'
+      color: 'green',
+      icon: 'i-heroicons-check-circle',
+      timeout: 3000
     })
 
-    // Rediriger vers la liste des matières
     await navigateTo('/materials')
 
-  } catch (error) {
-    console.error('Erreur lors de la création:', error)
-    useToast().add({
+  } catch (error: any) {
+    console.error('Save error:', error)
+    toast.add({
+      id: 'error-unknown',
       title: 'Erreur',
-      description: 'Impossible de créer la matière',
-      color: 'red'
+      description: error.data?.message || 'Une erreur est survenue lors de la création',
+      color: 'red',
+      icon: 'i-heroicons-exclamation-circle',
+      timeout: 5000
     })
   } finally {
     isSaving.value = false
