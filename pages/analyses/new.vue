@@ -20,7 +20,19 @@
       <!-- Carte de sélection de matière -->
       <UCard>
         <template #header>
-          <h3 class="text-lg font-semibold">Matière à analyser</h3>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Matière à analyser</h3>
+            <UButton
+              v-if="!selectedMaterial"
+              to="/materials/new"
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-plus"
+              size="sm"
+            >
+              Nouvelle matière
+            </UButton>
+          </div>
         </template>
 
         <div class="space-y-4 p-4">
@@ -186,6 +198,19 @@ const search = ref('')
 const selectedMaterial = ref<any>(null)
 const testImage = ref<string | null>(null)
 const isModalOpen = ref(false)
+
+const route = useRoute()
+const materialId = route.query.materialId as string
+
+// Charger la matière si un ID est fourni
+const { data: preselectedMaterial } = await useFetch(`/api/materials/${materialId}`, {
+  immediate: !!materialId
+})
+
+// Présélectionner la matière si elle existe
+if (preselectedMaterial.value) {
+  selectedMaterial.value = preselectedMaterial.value
+}
 
 // Récupérer les matières non analysées
 const { data: materials } = await useFetch('/api/materials', {

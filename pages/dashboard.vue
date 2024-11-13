@@ -39,18 +39,28 @@
     </div>
 
     <!-- Dernières matières -->
-    <UCard class="mt-8">
+    <UCard class="mt-6">
       <template #header>
         <div class="flex items-center justify-between">
-          <h2 class="text-base font-semibold">Dernières matières</h2>
-          <UButton
-            to="/materials"
-            color="gray"
-            variant="ghost"
-            icon="i-heroicons-arrow-right"
-          >
-            Voir tout
-          </UButton>
+          <h3 class="text-lg font-semibold">Dernières matières</h3>
+          <div class="flex gap-2">
+            <UButton
+              to="/materials/new"
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-plus"
+              size="sm"
+            />
+            <UButton
+              to="/materials"
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-arrow-right"
+              size="sm"
+            >
+              Voir tout
+            </UButton>
+          </div>
         </div>
       </template>
 
@@ -87,19 +97,29 @@
       </div>
     </UCard>
 
-    <!-- Analyses récentes -->
-    <UCard class="mt-8">
+    <!-- Dernières analyses -->
+    <UCard class="mt-6">
       <template #header>
         <div class="flex items-center justify-between">
-          <h2 class="text-base font-semibold">Analyses récentes</h2>
-          <UButton
-            to="/analyses"
-            color="gray"
-            variant="ghost"
-            icon="i-heroicons-arrow-right"
-          >
-            Voir tout
-          </UButton>
+          <h3 class="text-lg font-semibold">Dernières analyses</h3>
+          <div class="flex gap-2">
+            <UButton
+              to="/analyses/new"
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-plus"
+              size="sm"
+            />
+            <UButton
+              to="/analyses"
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-arrow-right"
+              size="sm"
+            >
+              Voir tout
+            </UButton>
+          </div>
         </div>
       </template>
 

@@ -39,7 +39,25 @@
 <script setup lang="ts">
 const route = useRoute()
 
-// Vérifier si on est sur la page de création d'analyse
+// Pages où le bouton nouvelle analyse doit être masqué
+const hideNewAnalysisButton = computed(() => [
+  '/materials/new',
+  '/analyses/new',
+  '/materials/[id]/analyze'
+].some(path => route.path.startsWith(path)))
+
+const navigationLinks = computed(() => [
+  { label: 'Tableau de bord', icon: 'i-heroicons-home', to: '/dashboard' },
+  { label: 'Analyses', icon: 'i-heroicons-chart-bar', to: '/analyses' },
+  { label: 'Matières', icon: 'i-heroicons-cube', to: '/materials' },
+  // Conditionnellement ajouter le bouton nouvelle analyse
+  ...(!hideNewAnalysisButton.value ? [{
+    label: 'Nouvelle analyse',
+    icon: 'i-heroicons-camera',
+    to: '/analyses/new'
+  }] : [])
+])
+
 const isAnalyzePage = computed(() => route.path === '/analyses/new')
 
 const navigationItems = [
