@@ -85,8 +85,11 @@ export default defineNuxtConfig({
     manifest: {
       name: 'CrocoCroc',
       short_name: 'CrocoCroc',
-      description: 'Application d\'analyse de matériaux',
-      theme_color: '#ffffff',
+      description: 'Analyse de solidité des couleurs ISO 105-A02',
+      theme_color: '#2E7D32',
+      background_color: '#ffffff',
+      display: 'standalone',
+      orientation: 'portrait',
       icons: [
         {
           src: 'icons/icon-64x64.png',
@@ -111,8 +114,20 @@ export default defineNuxtConfig({
       ]
     },
     workbox: {
-      navigateFallback: null,
-      globPatterns: ['**/*.{js,css,html,png,svg,ico}']
+      offlineStrategy: 'NetworkFirst',
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/api\.crococroc\.com\/.*$/,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'api-cache',
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 24 // 24 heures
+            }
+          }
+        }
+      ]
     },
     client: {
       installPrompt: true,

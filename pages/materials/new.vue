@@ -26,7 +26,6 @@
         <UForm
           :schema="formSchema"
           :state="formState"
-          @submit="onSubmit"
           class="p-4"
         >
           <div class="space-y-6">
@@ -39,6 +38,17 @@
             <UFormGroup label="Description" name="description">
               <UTextarea v-model="formState.description" />
             </UFormGroup>
+
+            <!-- Bouton pour activer la caméra -->
+            <UButton
+              v-if="!isCameraActive && !imagePreview && isFormValid"
+              block
+              color="primary"
+              icon="i-heroicons-camera"
+              @click="startCamera"
+            >
+              Prendre une photo
+            </UButton>
           </div>
         </UForm>
       </UCard>
@@ -50,8 +60,16 @@
         </template>
 
         <div class="p-4 space-y-4">
+          <!-- Message si formulaire incomplet -->
+          <UAlert
+            v-if="!isFormValid && !imagePreview"
+            color="yellow"
+            title="Information requise"
+            description="Veuillez d'abord remplir le nom et la description de la matière"
+          />
+
           <!-- Prévisualisation vidéo -->
-          <div v-if="!imagePreview" class="relative">
+          <div v-if="isCameraActive && !imagePreview" class="relative">
             <video
               v-if="stream"
               ref="videoRef"
@@ -76,10 +94,23 @@
               :description="cameraError"
               class="mt-4"
             />
+
+            <!-- Bouton de capture -->
+            <UButton
+              v-if="stream"
+              block
+              color="primary"
+              icon="i-heroicons-camera"
+              :loading="isCapturing"
+              class="mt-4"
+              @click="handleCapture"
+            >
+              {{ isCapturing ? 'Capture en cours...' : 'Prendre la photo' }}
+            </UButton>
           </div>
 
           <!-- Aperçu de l'image -->
-          <div v-else class="relative">
+          <div v-if="imagePreview" class="relative">
             <img
               :src="imagePreview"
               alt="Aperçu"
@@ -95,30 +126,31 @@
               Reprendre
             </UButton>
           </div>
-
-          <!-- Bouton de capture -->
-          <UButton
-            v-if="!imagePreview"
-            block
-            color="primary"
-            icon="i-heroicons-camera"
-            :loading="isCapturing"
-            :disabled="!stream || isCapturing"
-            @click="handleCapture"
-          >
-            {{ isCapturing ? 'Capture en cours...' : 'Prendre la photo' }}
-          </UButton>
         </div>
       </UCard>
+    </div>
+
+    <!-- Bouton d'enregistrement -->
+    <div class="mt-6 flex justify-end">
+      <UButton
+        color="primary"
+        :loading="isSaving"
+        :disabled="!canSave"
+        @click="saveMaterial"
+      >
+        {{ isSaving ? 'Enregistrement...' : 'Enregistrer la matière' }}
+      </UButton>
     </div>
   </UContainer>
 </template>
 
 <script setup lang="ts">
-const { stream, error: cameraError, isMobile, startCamera, takePhoto } = useCamera()
+const { stream, error: cameraError, isMobile, startCamera: initCamera, takePhoto } = useCamera()
 const videoRef = ref<HTMLVideoElement | null>(null)
 const imagePreview = ref<string | null>(null)
 const isCapturing = ref(false)
+const isSaving = ref(false)
+const isCameraActive = ref(false)
 
 // État du formulaire
 const formState = ref({
@@ -132,10 +164,31 @@ const formSchema = {
   description: 'required|min:10'
 }
 
-// Démarrer la caméra au montage du composant
-onMounted(async () => {
+// Vérifier si le formulaire est valide
+const isFormValid = computed(() => {
+  return formState.value.name.length >= 3 && 
+         formState.value.description.length >= 10
+})
+
+// Vérifier si on peut sauvegarder
+const canSave = computed(() => {
+  return isFormValid.value && imagePreview.value
+})
+
+// Démarrer la caméra
+async function startCamera() {
+  if (!isFormValid.value) {
+    useToast().add({
+      title: 'Erreur',
+      description: 'Veuillez d\'abord remplir le formulaire',
+      color: 'red'
+    })
+    return
+  }
+
   try {
-    await startCamera()
+    isCameraActive.value = true
+    await initCamera()
   } catch (error) {
     useToast().add({
       title: 'Erreur',
@@ -143,7 +196,7 @@ onMounted(async () => {
       color: 'red'
     })
   }
-})
+}
 
 // Nettoyer la caméra quand on quitte
 onBeforeUnmount(() => {
@@ -166,6 +219,7 @@ async function handleCapture() {
     const blob = await takePhoto()
     if (blob) {
       imagePreview.value = URL.createObjectURL(blob)
+      isCameraActive.value = false // Désactiver la caméra après capture
     } else {
       throw new Error('Échec de la capture')
     }
@@ -183,23 +237,26 @@ async function handleCapture() {
 // Réinitialiser la capture
 async function resetCapture() {
   imagePreview.value = null
+  isCameraActive.value = true
   if (!stream.value) {
-    await startCamera()
+    await initCamera()
   }
 }
 
-// Soumettre le formulaire
-async function onSubmit() {
-  if (!imagePreview.value) {
+// Sauvegarder la matière
+async function saveMaterial() {
+  if (!canSave.value) {
     useToast().add({
       title: 'Erreur',
-      description: 'Veuillez prendre une photo de la matière',
+      description: 'Veuillez remplir tous les champs et prendre une photo',
       color: 'red'
     })
     return
   }
 
   try {
+    isSaving.value = true
+
     // Créer un FormData pour l'upload
     const formData = new FormData()
     formData.append('name', formState.value.name)
@@ -212,6 +269,12 @@ async function onSubmit() {
       body: formData
     })
 
+    useToast().add({
+      title: 'Succès',
+      description: 'Matière créée avec succès',
+      color: 'green'
+    })
+
     // Rediriger vers la liste des matières
     await navigateTo('/materials')
 
@@ -222,6 +285,8 @@ async function onSubmit() {
       description: 'Impossible de créer la matière',
       color: 'red'
     })
+  } finally {
+    isSaving.value = false
   }
 }
 </script>

@@ -8,14 +8,28 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
-model Material {
-  id          String     @id @default(cuid())
-  name        String     @unique
-  description String?
-  image       String     
-  created_at  DateTime   @default(now()) @map("created_at")
-  updated_at  DateTime   @updatedAt @map("updated_at")
+model Organization {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  plan        String    @default("free")
+  users       User[]
+  materials   Material[]
   analyses    Analysis[]
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+}
+
+model Material {
+  id              String      @id @default(cuid())
+  organization_id String
+  organization    Organization @relation(fields: [organization_id], references: [id])
+  name            String     @unique
+  description     String?
+  image           String     
+  created_at      DateTime   @default(now()) @map("created_at")
+  updated_at      DateTime   @updatedAt @map("updated_at")
+  analyses        Analysis[]
 
   @@map("materials")
 }
