@@ -10,25 +10,41 @@
     <!-- Sidebar -->
     <aside
       :class="[
-        'fixed z-[55] h-full w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-transform duration-300 ease-in-out',
+        'fixed z-[55] h-full w-64 transition-transform duration-300 ease-in-out',
+        'bg-white dark:bg-gray-900',
+        'border-r border-gray-200 dark:border-gray-800',
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >
-      <!-- Header avec logo et bouton dark mode -->
+      <!-- Header -->
       <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-        <NuxtImg
-          :src="isDark ? '/logo-dark.svg' : '/logo-light.svg'"
-          alt="CrocoCroc"
-          class="h-8 w-auto"
-          loading="eager"
-        />
+        <NuxtLink to="/dashboard" class="flex-shrink-0">
+          <NuxtImg
+            :src="isDark ? '/logo-dark.svg' : '/logo-light.svg'"
+            alt="CrocoCroc"
+            class="h-8 w-auto"
+          />
+        </NuxtLink>
         <UButton
-          :icon="colorMode.value === 'dark' ? 'i-heroicons-moon' : 'i-heroicons-sun'"
+          :icon="isDark ? 'i-heroicons-moon' : 'i-heroicons-sun'"
           color="gray"
           variant="ghost"
-          size="sm"
           @click="toggleDark"
         />
+      </div>
+
+      <!-- Bouton Nouvelle Analyse (masqué sur la page de création) -->
+      <div v-if="!isAnalyzePage" class="p-4">
+        <UButton
+          to="/analyses/new"
+          block
+          color="primary"
+          icon="i-heroicons-camera"
+          size="lg"
+          class="font-semibold"
+        >
+          Nouvelle analyse
+        </UButton>
       </div>
 
       <!-- Navigation -->
@@ -39,12 +55,7 @@
             wrapper: 'space-y-2',
             base: 'group flex items-center w-full gap-2 rounded-md p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800',
             active: 'text-primary-500 dark:text-primary-400 bg-primary-50 dark:bg-primary-950',
-            inactive: 'text-gray-700 dark:text-gray-200',
-            icon: {
-              base: 'flex-shrink-0 w-5 h-5',
-              active: 'text-primary-500 dark:text-primary-400',
-              inactive: 'text-gray-400 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-200'
-            }
+            inactive: 'text-gray-700 dark:text-gray-200'
           }"
         />
       </nav>
@@ -53,50 +64,43 @@
 </template>
 
 <script setup lang="ts">
-import darkLogo from '~/assets/images/logo-dark.svg'
-import lightLogo from '~/assets/images/logo-light.svg'
-
+const route = useRoute()
 const colorMode = useColorMode()
-const props = defineProps<{
+
+defineProps<{
   isOpen: boolean
 }>()
 
 defineEmits<{
-  toggle: [],
-  close: []
+  toggle: []
 }>()
 
-const navigation = [
+// Vérifier si on est sur la page de création d'analyse
+const isAnalyzePage = computed(() => route.path === '/analyses/new')
+
+const navigation = computed(() => [
   {
     label: 'Accueil',
     icon: 'i-heroicons-home',
-    to: '/dashboard'
+    to: '/dashboard',
+    active: route.path === '/dashboard'
   },
   {
-    label: 'Nouvelle analyse',
-    icon: 'i-heroicons-plus-circle',
-    to: '/analyze',
-    class: 'text-primary-500 dark:text-primary-400 font-medium'
+    label: 'Analyses',
+    icon: 'i-heroicons-chart-bar',
+    to: '/analyses',
+    active: route.path === '/analyses'
   },
   {
     label: 'Matières',
     icon: 'i-heroicons-square-3-stack-3d',
-    to: '/materials'
+    to: '/materials',
+    active: route.path === '/materials'
   }
-]
+])
 
+const isDark = useDark()
 const toggleDark = () => {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
-
-const isDark = useDark()
-
-// Empêcher le défilement du body quand le menu est ouvert sur mobile
-onMounted(() => {
-  watch(() => props.isOpen, (isOpen) => {
-    if (window.innerWidth < 1024) {
-      document.body.style.overflow = isOpen ? 'hidden' : ''
-    }
-  })
-})
 </script>

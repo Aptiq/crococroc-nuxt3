@@ -1,10 +1,6 @@
 <template>
   <NuxtLayout>
-    <NuxtLoadingIndicator />
-    <transition name="page" mode="out-in">
-      <NuxtPage />
-    </transition>
-    <UNotifications />
+    <NuxtPage />
   </NuxtLayout>
 </template>
 

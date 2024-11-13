@@ -1,8 +1,8 @@
 <template>
-  <UContainer>
+  <UContainer class="py-6">
     <UPageHeader
-      title="Mes matières"
-      description="Liste des matières à analyser"
+      title="Matières"
+      description="Catalogue des matières disponibles"
     >
       <template #right>
         <UButton
@@ -15,77 +15,159 @@
       </template>
     </UPageHeader>
 
-    <div v-if="loading" class="flex justify-center py-8">
-      <ULoadingBar />
+    <!-- Filtres -->
+    <div class="mt-6 space-y-4">
+      <UInput
+        v-model="search"
+        icon="i-heroicons-magnifying-glass"
+        placeholder="Rechercher une matière..."
+        class="max-w-md"
+      />
+      
+      <div class="flex gap-4">
+        <USelect
+          v-model="sortBy"
+          :options="sortOptions"
+          placeholder="Trier par"
+          class="w-48"
+        />
+        <UButton
+          :icon="sortDirection === 'asc' ? 'i-heroicons-arrow-up' : 'i-heroicons-arrow-down'"
+          color="gray"
+          variant="ghost"
+          @click="toggleSortDirection"
+        />
+      </div>
     </div>
 
-    <div v-else class="grid md:grid-cols-3 gap-4 mt-8">
-      <UCard
-        v-for="material in materials"
-        :key="material.id"
-        class="hover:shadow-lg transition-shadow"
-        :to="`/materials/${material.id}`"
-      >
-        <img
-          :src="material.image"
-          class="w-full h-48 object-cover rounded-t-lg"
-          :alt="material.name"
-        />
-        <template #footer>
-          <div>
-            <h3 class="font-semibold">{{ material.name }}</h3>
-            <p class="text-sm text-gray-500">
-              {{ formatDate(material.created_at) }}
-            </p>
-          </div>
-        </template>
+    <div class="mt-6">
+      <UCard>
+        <!-- Gestion du chargement -->
+        <div v-if="pending" class="p-4">
+          <USkeleton class="h-32" />
+        </div>
+        
+        <!-- Message si aucune matière -->
+        <div v-else-if="!filteredMaterials.length" class="p-8 text-center text-gray-500">
+          Aucune matière ne correspond à votre recherche
+        </div>
+        
+        <!-- Liste des matières -->
+        <div v-else class="grid gap-6 p-6 sm:grid-cols-2 lg:grid-cols-3">
+          <UCard
+            v-for="material in filteredMaterials"
+            :key="material.id"
+            :to="`/materials/${material.id}`"
+            class="cursor-pointer hover:shadow-lg transition-shadow"
+          >
+            <!-- Image de la matière -->
+            <div class="relative w-full pb-[100%]">
+              <img
+                :src="material.image"
+                :alt="material.name"
+                class="absolute inset-0 w-full h-full object-cover rounded-t-lg"
+              />
+              <UBadge
+                :color="material.hasAnalysis ? 'green' : 'gray'"
+                class="absolute top-2 right-2"
+              >
+                {{ material.hasAnalysis ? 'Analysé' : 'Non analysé' }}
+              </UBadge>
+            </div>
+
+            <!-- Informations de la matière -->
+            <div class="p-4">
+              <h3 class="font-semibold">{{ material.name }}</h3>
+              <p class="text-sm text-gray-500 mt-1 line-clamp-2">
+                {{ material.description }}
+              </p>
+              <p class="text-xs text-gray-400 mt-2">
+                Créée le {{ formatDate(material.created_at) }}
+              </p>
+            </div>
+          </UCard>
+        </div>
       </UCard>
     </div>
-
-    <UCard v-if="!loading && !materials?.length" class="mt-8">
-      <div class="text-center py-12">
-        <UIcon
-          name="i-heroicons-square-3-stack-3d"
-          class="mx-auto h-12 w-12 text-gray-400"
-        />
-        <h3 class="mt-2 text-sm font-semibold text-gray-900">
-          Aucune matière
-        </h3>
-        <p class="mt-1 text-sm text-gray-500">
-          Commencez par ajouter une nouvelle matière à analyser.
-        </p>
-        <div class="mt-6">
-          <UButton
-            to="/materials/new"
-            color="primary"
-          >
-            Nouvelle matière
-          </UButton>
-        </div>
-      </div>
-    </UCard>
   </UContainer>
 </template>
 
 <script setup lang="ts">
-import { useMaterialsStore } from '~/stores/materials'
-
-const store = useMaterialsStore()
-
-// Charger les matières au montage du composant
-onMounted(async () => {
-  await store.fetchMaterials()
+definePageMeta({
+  layout: 'default',
+  middleware: ['auth']
 })
 
-// Utiliser les données du store
-const materials = computed(() => store.sortedMaterials)
-const loading = computed(() => store.loading)
+// États
+const search = ref('')
+const sortBy = ref('created_at')
+const sortDirection = ref<'asc' | 'desc'>('desc')
 
+// Options de tri
+const sortOptions = [
+  { label: 'Date de création', value: 'created_at' },
+  { label: 'Nom', value: 'name' },
+]
+
+// Récupération des matières
+const { data: materials, pending } = await useFetch('/api/materials', {
+  transform: (response: any) => {
+    console.log('Raw materials response:', response)
+    return response
+  }
+})
+
+// Formatage de la date
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('fr-FR', {
-    day: '2-digit',
+    day: 'numeric',
     month: 'long',
     year: 'numeric'
   })
 }
+
+// Inverser la direction du tri
+function toggleSortDirection() {
+  sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+}
+
+// Filtrage et tri des matières
+const filteredMaterials = computed(() => {
+  if (!materials.value) return []
+  
+  let filtered = [...materials.value]
+  
+  // Filtrage par recherche
+  if (search.value) {
+    const searchLower = search.value.toLowerCase()
+    filtered = filtered.filter(material => 
+      material.name.toLowerCase().includes(searchLower) ||
+      (material.description?.toLowerCase() || '').includes(searchLower)
+    )
+  }
+  
+  // Tri
+  filtered.sort((a, b) => {
+    const aValue = a[sortBy.value]
+    const bValue = b[sortBy.value]
+    
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortDirection.value === 'asc' 
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue)
+    }
+    
+    return sortDirection.value === 'asc' 
+      ? Number(aValue) - Number(bValue)
+      : Number(bValue) - Number(aValue)
+  })
+  
+  return filtered
+})
+
+// Debug logs
+watchEffect(() => {
+  console.log('Materials count:', materials.value?.length)
+  console.log('Filtered count:', filteredMaterials.value.length)
+})
 </script>

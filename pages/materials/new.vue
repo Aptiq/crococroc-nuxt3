@@ -1,5 +1,5 @@
 <template>
-  <UContainer>
+  <UContainer class="py-6">
     <UPageHeader
       title="Nouvelle matière"
       description="Ajoutez une nouvelle matière à analyser"
@@ -11,145 +11,176 @@
           variant="ghost"
           icon="i-heroicons-arrow-left"
         >
-          Retour
+          Retour aux matières
         </UButton>
       </template>
     </UPageHeader>
 
-    <UCard class="mt-8">
-      <form @submit.prevent="handleSubmit">
-        <UFormGroup
-          label="Nom de la matière"
-          name="name"
-        >
-          <UInput
-            v-model="form.name"
-            placeholder="Ex: Bracelet cuir marron"
-            required
-          />
-        </UFormGroup>
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Informations de la matière -->
+      <UCard>
+        <template #header>
+          <h3 class="text-lg font-semibold">Informations</h3>
+        </template>
 
-        <UFormGroup
-          label="Description"
-          name="description"
+        <UForm
+          :schema="formSchema"
+          :state="formState"
+          @submit="onSubmit"
+          class="p-4"
         >
-          <UTextarea
-            v-model="form.description"
-            placeholder="Ajoutez des détails sur la matière..."
-          />
-        </UFormGroup>
+          <div class="space-y-6">
+            <!-- Nom de la matière -->
+            <UFormGroup label="Nom" name="name">
+              <UInput v-model="formState.name" />
+            </UFormGroup>
 
-        <UFormGroup
-          label="Photo"
-          name="image"
-        >
-          <CameraCapture
-            v-model="form.image"
-            @photo-taken="handlePhotoTaken"
-          />
-        </UFormGroup>
+            <!-- Description -->
+            <UFormGroup label="Description" name="description">
+              <UTextarea v-model="formState.description" />
+            </UFormGroup>
+          </div>
+        </UForm>
+      </UCard>
 
-        <div class="mt-4 flex justify-end gap-2">
+      <!-- Capture photo -->
+      <UCard>
+        <template #header>
+          <h3 class="text-lg font-semibold">Photo de référence</h3>
+        </template>
+
+        <div class="p-4 space-y-4">
+          <!-- Guide de capture -->
+          <CameraGuide v-if="!imagePreview" />
+          
+          <!-- Aperçu de l'image -->
+          <div v-if="imagePreview" class="relative">
+            <img
+              :src="imagePreview"
+              alt="Aperçu"
+              class="w-full aspect-video object-cover rounded-lg"
+            />
+            <UButton
+              color="gray"
+              variant="solid"
+              icon="i-heroicons-arrow-path"
+              class="absolute top-2 right-2"
+              @click="resetImage"
+            >
+              Reprendre
+            </UButton>
+          </div>
+
+          <!-- Bouton de capture -->
           <UButton
-            to="/materials"
-            color="gray"
-          >
-            Annuler
-          </UButton>
-          <UButton
-            type="submit"
+            v-if="!imagePreview"
+            block
             color="primary"
-            :loading="pending"
+            icon="i-heroicons-camera"
+            @click="captureImage"
           >
-            Enregistrer
+            Prendre la photo
+          </UButton>
+
+          <!-- Bouton de validation -->
+          <UButton
+            v-else
+            block
+            color="primary"
+            :loading="loading"
+            :disabled="!formState.name || !formState.description"
+            @click="onSubmit"
+          >
+            Créer la matière
           </UButton>
         </div>
-      </form>
-    </UCard>
+      </UCard>
+    </div>
   </UContainer>
 </template>
 
 <script setup lang="ts">
-const materialsStore = useMaterialsStore()
-const router = useRouter()
+import { ref } from 'vue'
 
-const form = ref({
-  name: '',
-  description: '',
-  image: null as string | null
+definePageMeta({
+  layout: 'default',
+  middleware: ['auth']
 })
 
-const pending = ref(false)
+// État du formulaire
+const formState = ref({
+  name: '',
+  description: '',
+})
 
-function handlePhotoTaken(photoData: string) {
-  console.log('Photo taken, length:', photoData?.length)
-  form.value.image = photoData
+// État de l'image
+const imagePreview = ref<string | null>(null)
+const loading = ref(false)
+
+// Schéma de validation
+const formSchema = {
+  name: 'required|min:3',
+  description: 'required|min:10'
 }
 
-async function handleSubmit() {
+// Capturer une image
+async function captureImage() {
   try {
-    console.log('Submit clicked, form values:', {
-      name: form.value.name,
-      descriptionLength: form.value.description?.length,
-      hasImage: !!form.value.image
-    })
-
-    pending.value = true
-
-    if (!form.value.name?.trim()) {
-      useToast().add({
-        title: 'Erreur',
-        description: 'Le nom est requis',
-        color: 'red'
-      })
-      return
-    }
-
-    if (!form.value.image) {
-      useToast().add({
-        title: 'Erreur',
-        description: 'Veuillez prendre une photo',
-        color: 'red'
-      })
-      return
-    }
-
-    const materialData = {
-      name: form.value.name.trim(),
-      description: form.value.description?.trim() || '',
-      image: form.value.image
-    }
-
-    console.log('Sending material data:', {
-      name: materialData.name,
-      descriptionLength: materialData.description.length,
-      imageLength: materialData.image.length
-    })
-
-    // Créer la matière
-    const result = await materialsStore.createMaterial(materialData)
-    console.log('Material created:', result)
-
-    // Rafraîchir la liste des matières
-    await materialsStore.fetchMaterials()
-
+    // Implémenter la capture d'image avec la caméra
+    // Utiliser le composant CameraGuide pour les guides
+  } catch (error) {
+    console.error('Erreur lors de la capture:', error)
     useToast().add({
-      title: 'Succès',
-      description: 'Matière enregistrée avec succès',
-      color: 'green'
+      title: 'Erreur',
+      description: 'Impossible de capturer l\'image',
+      color: 'red'
+    })
+  }
+}
+
+// Réinitialiser l'image
+function resetImage() {
+  imagePreview.value = null
+}
+
+// Soumettre le formulaire
+async function onSubmit() {
+  if (!imagePreview.value) {
+    useToast().add({
+      title: 'Erreur',
+      description: 'Veuillez prendre une photo de la matière',
+      color: 'red'
+    })
+    return
+  }
+
+  try {
+    loading.value = true
+
+    // Créer un FormData pour l'upload
+    const formData = new FormData()
+    formData.append('name', formState.value.name)
+    formData.append('description', formState.value.description)
+    formData.append('image', imagePreview.value)
+
+    // Envoyer la requête
+    await $fetch('/api/materials', {
+      method: 'POST',
+      body: formData
     })
 
     // Rediriger vers la liste des matières
     await navigateTo('/materials')
-  } catch (error: any) {
-    console.error('Submission error:', error)
+
+  } catch (error) {
+    console.error('Erreur lors de la création:', error)
     useToast().add({
       title: 'Erreur',
-      description: error.message || 'Erreur lors de la création de la matière',
+      description: 'Impossible de créer la matière',
       color: 'red'
     })
   } finally {
-    pending.value = false
+    loading.value = false
   }
 }
 </script>

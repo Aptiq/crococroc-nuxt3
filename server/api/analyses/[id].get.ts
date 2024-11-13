@@ -3,7 +3,7 @@ import prisma from '~/server/utils/prisma'
 
 export default defineEventHandler(async (event) => {
   const id = event.context.params?.id
-  
+
   if (!id) {
     throw createError({
       statusCode: 400,
@@ -15,7 +15,14 @@ export default defineEventHandler(async (event) => {
     const analysis = await prisma.analysis.findUnique({
       where: { id },
       include: {
-        material: true
+        material: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            description: true
+          }
+        }
       }
     })
 
@@ -26,13 +33,18 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    console.log('Found analysis:', {
+      ...analysis,
+      image2: analysis.image2 || analysis.image2_gray
+    })
+
     return analysis
 
   } catch (error) {
-    console.error('Erreur lors de la récupération de l\'analyse:', error)
+    console.error('Error fetching analysis:', error)
     throw createError({
       statusCode: 500,
-      message: 'Erreur serveur'
+      message: 'Erreur lors de la récupération de l\'analyse'
     })
   }
 })

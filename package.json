@@ -9,7 +9,8 @@
     "dev:prepare": "nuxt prepare",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "prisma generate && nuxt prepare"
+    "postinstall": "prisma generate && nuxt prepare",
+    "test": "jest"
   },
   "dependencies": {
     "@heroicons/vue": "^2.1.5",
@@ -36,6 +37,10 @@
     "@vite-pwa/nuxt": "^0.10.5",
     "prisma": "5.21.1",
     "typescript": "^5.6.3",
-    "vue-tsc": "^2.1.10"
+    "vue-tsc": "^2.1.10",
+    "@types/jest": "^29.5.12",
+    "@vue/test-utils": "^2.4.4",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2"
   }
 }

@@ -27,14 +27,22 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@vueuse/nuxt',
     '@vite-pwa/nuxt',
-    '@nuxt/image' // Ajouté pour le traitement des images
+    '@nuxt/image',
+    '@nuxt/ui',
+    '@nuxtjs/color-mode'
   ],
   
   // Configuration UI
   ui: {
     global: true,
     icons: ['heroicons'],
-    safelistColors: ['green', 'red', 'gray'] // Ajouté pour les couleurs des toasts
+    safelistColors: ['green', 'red', 'gray'],
+    components: {
+      global: true,
+      dirs: ['~/components']
+    },
+    strategy: 'merge',
+    prefix: 'U'
   },
   
   // Configuration Pinia
@@ -62,7 +70,10 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', href: '/pwa-192x192.png' }
       ]
     },
-    pageTransition: false,
+    pageTransition: { 
+      name: 'page', 
+      mode: 'out-in' 
+    },
     layoutTransition: false,
     baseURL: '/',
     buildAssetsDir: '/_nuxt/'
@@ -96,13 +107,24 @@ export default defineNuxtConfig({
     },
     workbox: {
       navigateFallback: '/',
-      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
-      globDirectory: '.output/public',
-      cleanupOutdatedCaches: true
+      globPatterns: [
+        '**/*.{js,css,html,ico,png,svg,woff2}'
+      ],
+      globDirectory: 'dist',
+      cleanupOutdatedCaches: true,
+      dev: {
+        enabled: true,
+        type: 'module',
+        navigateFallback: '/'
+      }
     },
     devOptions: {
       enabled: true,
       type: 'module'
+    },
+    disable: process.env.NODE_ENV === 'development',
+    workbox: {
+      enabled: process.env.NODE_ENV === 'production'
     }
   },
 
@@ -147,7 +169,7 @@ export default defineNuxtConfig({
 
   // Configuration TypeScript
   typescript: {
-    strict: false,
+    strict: true,
     typeCheck: false,
     shim: false
   },
@@ -179,7 +201,8 @@ export default defineNuxtConfig({
   },
 
   experimental: {
-    componentIslands: false
+    componentIslands: false,
+    viewTransition: true
   },
 
   vue: {
@@ -202,5 +225,9 @@ export default defineNuxtConfig({
     'swiper/css',
     'swiper/css/navigation',
     'swiper/css/pagination'
-  ]
+  ],
+
+  colorMode: {
+    classSuffix: ''
+  }
 })
