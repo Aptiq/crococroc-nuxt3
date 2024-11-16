@@ -2,7 +2,7 @@
   <UContainer class="py-6">
     <UPageHeader
       title="Nouvelle analyse"
-      description="Sélectionnez une matière et prenez une photo après test"
+      description="Sélectionnez une matière à analyser"
     >
       <template #right>
         <UButton
@@ -16,118 +16,71 @@
       </template>
     </UPageHeader>
 
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Carte de sélection de matière -->
-      <UCard>
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold">Matière à analyser</h3>
-            <UButton
-              v-if="!selectedMaterial"
-              to="/materials/new"
-              color="gray"
-              variant="ghost"
-              icon="i-heroicons-plus"
-              size="sm"
-            >
-              Nouvelle matière
-            </UButton>
-          </div>
-        </template>
-
-        <div class="space-y-4 p-4">
-          <!-- Affichage de la matière sélectionnée -->
-          <div v-if="selectedMaterial" class="border rounded-lg p-4">
-            <div class="flex items-center gap-4">
-              <img
-                :src="selectedMaterial.image"
-                :alt="selectedMaterial.name"
-                class="w-20 h-20 object-cover rounded"
-              />
-              <div>
-                <h4 class="font-medium">{{ selectedMaterial.name }}</h4>
-                <p class="text-sm text-gray-500">{{ selectedMaterial.description }}</p>
-              </div>
-            </div>
-            <UButton
-              color="gray"
-              variant="ghost"
-              icon="i-heroicons-x-mark"
-              class="mt-4"
-              @click="selectedMaterial = null"
-            >
-              Changer de matière
-            </UButton>
-          </div>
-
-          <!-- Boutons d'action -->
-          <div v-else class="space-y-4">
-            <UButton
-              block
-              color="primary"
-              icon="i-heroicons-square-3-stack-3d"
-              @click="isModalOpen = true"
-            >
-              Choisir une matière
-            </UButton>
-            <UDivider>ou</UDivider>
-            <UButton
-              block
-              color="gray"
-              variant="soft"
-              icon="i-heroicons-plus"
-              to="/materials/new"
-            >
-              Créer une nouvelle matière
-            </UButton>
-          </div>
+    <UCard class="mt-6">
+      <template #header>
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold">Sélection de la matière</h3>
+          <UButton
+            v-if="!selectedMaterial"
+            to="/materials/new"
+            color="gray"
+            variant="ghost"
+            icon="i-heroicons-plus"
+            size="sm"
+          >
+            Nouvelle matière
+          </UButton>
         </div>
-      </UCard>
+      </template>
 
-      <!-- Carte de capture photo -->
-      <UCard>
-        <template #header>
-          <h3 class="text-lg font-semibold">Photo après test</h3>
-        </template>
-
-        <div class="space-y-4 p-4">
-          <!-- Aperçu de l'image -->
-          <div v-if="testImage" class="relative">
+      <div class="space-y-4 p-4">
+        <!-- Affichage de la matière sélectionnée -->
+        <div v-if="selectedMaterial" class="border rounded-lg p-4">
+          <div class="flex items-center gap-4">
             <img
-              :src="testImage"
-              alt="Aperçu"
-              class="w-full h-64 object-cover rounded-lg"
+              :src="selectedMaterial.image"
+              :alt="selectedMaterial.name"
+              class="w-20 h-20 object-cover rounded"
             />
-            <UButton
-              color="gray"
-              variant="solid"
-              icon="i-heroicons-arrow-path"
-              class="absolute top-2 right-2"
-              @click="testImage = null"
-            >
-              Reprendre
-            </UButton>
+            <div>
+              <h4 class="font-medium">{{ selectedMaterial.name }}</h4>
+              <p class="text-sm text-gray-500">{{ selectedMaterial.description }}</p>
+            </div>
           </div>
-
-          <!-- Message si pas de matière sélectionnée -->
-          <div v-else-if="!selectedMaterial" class="py-12 text-center text-gray-500">
-            Veuillez d'abord sélectionner une matière
-          </div>
-
-          <!-- Bouton de capture -->
-          <div v-else>
-            <UButton
-              block
-              color="primary"
-              icon="i-heroicons-camera"
-              @click="captureImage"
-            >
-              Prendre la photo
-            </UButton>
-          </div>
+          <UButton
+            color="gray"
+            variant="ghost"
+            icon="i-heroicons-x-mark"
+            class="mt-4"
+            @click="selectedMaterial = null"
+          >
+            Changer de matière
+          </UButton>
         </div>
-      </UCard>
-    </div>
+
+        <!-- Boutons d'action -->
+        <div v-else class="space-y-4">
+          <UButton
+            block
+            color="primary"
+            icon="i-heroicons-square-3-stack-3d"
+            @click="isModalOpen = true"
+          >
+            Choisir une matière
+          </UButton>
+          <UDivider>ou</UDivider>
+          <UButton
+            block
+            color="gray"
+            variant="soft"
+            icon="i-heroicons-plus"
+            to="/materials/new"
+          >
+            Créer une nouvelle matière
+          </UButton>
+        </div>
+      </div>
+    </UCard>
 
     <!-- Modal de sélection de matière -->
     <UModal v-model="isModalOpen">
@@ -188,15 +141,18 @@
 </template>
 
 <script setup lang="ts">
+import type { Material } from '~/types'
+
 definePageMeta({
   layout: 'default',
   middleware: ['auth']
 })
 
-// États
+const router = useRouter()
+
+// États avec typage
 const search = ref('')
-const selectedMaterial = ref<any>(null)
-const testImage = ref<string | null>(null)
+const selectedMaterial = ref<Material | null>(null)
 const isModalOpen = ref(false)
 
 const route = useRoute()
@@ -231,23 +187,15 @@ const filteredMaterials = computed(() => {
 })
 
 // Sélectionner une matière
-function selectMaterial(material: any) {
+function selectMaterial(material: Material) {
   selectedMaterial.value = material
   isModalOpen.value = false
 }
 
-// Capturer une image
-async function captureImage() {
-  try {
-    // Implémenter la capture d'image ici
-    // Utiliser la caméra ou l'upload de fichier
-  } catch (error) {
-    console.error('Erreur lors de la capture:', error)
-    useToast().add({
-      title: 'Erreur',
-      description: 'Impossible de capturer l\'image',
-      color: 'red'
-    })
+// Redirection avec typage
+watch(selectedMaterial, (newMaterial: Material | null) => {
+  if (newMaterial?.id) {
+    router.push(`/materials/${newMaterial.id}/analyze`)
   }
-}
+})
 </script>

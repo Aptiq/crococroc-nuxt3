@@ -79,6 +79,11 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  layout: 'default',
+  middleware: ['auth']
+})
+
 const search = ref('')
 const filter = ref('')
 const sort = ref('recent')

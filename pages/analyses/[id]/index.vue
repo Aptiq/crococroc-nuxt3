@@ -153,6 +153,11 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  layout: 'default',
+  middleware: ['auth']
+})
+
 interface Analysis {
   id: string
   material_id: string

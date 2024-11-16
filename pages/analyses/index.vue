@@ -86,6 +86,11 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  layout: 'default',
+  middleware: ['auth']
+})
+
 const search = ref('')
 const gradeFilter = ref('')
 const sort = ref('recent')

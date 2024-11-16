@@ -206,6 +206,11 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  layout: 'default',
+  middleware: ['auth']
+})
+
 // Récupérer les statistiques
 const { data: stats } = await useFetch('/api/dashboard/stats')
 

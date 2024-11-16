@@ -94,6 +94,19 @@
 </template>
 
 <script setup lang="ts">
+import type { Material } from '~/types'
+
+interface AnalysisResponse {
+  id: string
+  material_id: string
+  // autres propriétés nécessaires...
+}
+
+definePageMeta({
+  layout: 'default',
+  middleware: ['auth']
+})
+
 const route = useRoute()
 const router = useRouter()
 const { id } = route.params
@@ -102,8 +115,8 @@ const { id } = route.params
 const testImage = ref<string | null>(null)
 const analyzing = ref(false)
 
-// Charger les données de la matière
-const { data: material, pending } = await useFetch(`/api/materials/${id}`)
+// Charger les données de la matière avec typage
+const { data: material, pending } = await useFetch<Material>(`/api/materials/${id}`)
 
 // Formater la date
 function formatDate(date: string) {
@@ -114,28 +127,28 @@ function formatDate(date: string) {
   })
 }
 
-// Lancer l'analyse
+// Lancer l'analyse avec typage de la réponse
 async function analyzeImages() {
   if (!testImage.value) return
 
   analyzing.value = true
   try {
-    // Convertir l'image base64 en blob
     const response = await fetch(testImage.value)
     const blob = await response.blob()
 
-    // Préparer les données pour l'envoi
     const formData = new FormData()
     formData.append('testImage', blob, 'test-image.jpg')
 
-    // Envoyer à l'API
-    const result = await $fetch(`/api/materials/${id}/analyze`, {
+    const result = await $fetch<AnalysisResponse>(`/api/materials/${id}/analyze`, {
       method: 'POST',
       body: formData
     })
 
-    // Rediriger vers la page des résultats
-    router.push(`/analyses/${result.id}`)
+    if (result?.id) {
+      router.push(`/analyses/${result.id}`)
+    } else {
+      throw new Error('ID d\'analyse manquant dans la réponse')
+    }
   } catch (error) {
     useToast().add({
       title: 'Erreur',
@@ -146,4 +159,16 @@ async function analyzeImages() {
     analyzing.value = false
   }
 }
+
+// Vérification avec typage
+watch(material, (newMaterial: Material | null) => {
+  if (!newMaterial) {
+    useToast().add({
+      title: 'Erreur',
+      description: 'Cette matière n\'existe pas. Veuillez en sélectionner une autre.',
+      color: 'red'
+    })
+    router.push('/analyses/new')
+  }
+})
 </script>

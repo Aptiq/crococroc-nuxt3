@@ -143,6 +143,11 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  layout: 'default',
+  middleware: ['auth']
+})
+
 const route = useRoute()
 const { id } = route.params
 

@@ -2,18 +2,14 @@
 export interface Analysis {
   id: string
   material_id: string
-  material: {
-    id: string
-    name: string
-    image: string
-    description?: string
-  }
+  material: Material
+  image1: string
   image1_gray: string
   image1_iso_grade: number
   image1_avg_gray: number
   image1_resolution: string
-  image2_gray: string
   image2: string
+  image2_gray: string
   image2_iso_grade: number
   image2_avg_gray: number
   image2_resolution: string
@@ -27,7 +23,21 @@ export interface Material {
   name: string
   description?: string
   image: string
-  createdAt: Date
-  updatedAt: Date
+  created_at: string
+  updated_at: string
   analyses?: Analysis[]
+  hasAnalysis?: boolean
+}
+
+export interface ImageAnalysis {
+  gray_image_str: string
+  iso_grade: number
+  average_gray: number
+  resolution: string
+}
+
+export interface TestResults {
+  image1: ImageAnalysis
+  image2: ImageAnalysis
+  difference_grade: number
 } 
