@@ -1,7 +1,4 @@
 {
-    "version": 2,
-    "framework": "nuxt",
-    "buildCommand": "pnpm run build",
     "installCommand": "pnpm install --no-frozen-lockfile",
-    "outputDirectory": ".output/public"
+    "buildCommand": "pnpm run build"
   }
