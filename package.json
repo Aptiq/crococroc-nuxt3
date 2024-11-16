@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-app",
+  "name": "crococroc",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@9.8.0",
@@ -11,7 +11,7 @@
     "preview": "nuxt preview",
     "postinstall": "prisma generate && nuxt prepare",
     "test": "jest",
-    "clean": "if exist node_modules rmdir /s /q node_modules && if exist .nuxt rmdir /s /q .nuxt && if exist .output rmdir /s /q .output && if exist pnpm-lock.yaml del pnpm-lock.yaml",
+    "clean": "rimraf node_modules .nuxt .output pnpm-lock.yaml",
     "reset": "pnpm clean && pnpm install",
     "db:seed": "ts-node prisma/seed.ts"
   },
@@ -19,7 +19,6 @@
     "@heroicons/vue": "2.1.5",
     "@nuxt/ui": "2.18.7",
     "@nuxt/ui-pro": "1.4.4",
-    "@nuxtjs/tailwindcss": "6.12.2",
     "@pinia-plugin-persistedstate/nuxt": "1.2.1",
     "@pinia/nuxt": "0.5.5",
     "@prisma/client": "5.21.1",
@@ -36,20 +35,21 @@
   },
   "devDependencies": {
     "@nuxt/image": "1.8.1",
+    "@nuxtjs/tailwindcss": "6.12.2",
     "@types/jest": "29.5.12",
     "@types/node": "22.8.7",
     "@vite-pwa/nuxt": "0.10.5",
     "@vue/test-utils": "2.4.4",
+    "autoprefixer": "latest",
     "jest": "29.7.0",
+    "postcss": "latest",
     "prisma": "5.21.1",
+    "rimraf": "latest",
+    "tailwindcss": "latest",
     "ts-jest": "29.1.2",
     "ts-node": "^10.9.2",
     "typescript": "5.6.3",
-    "vue-tsc": "2.1.10",
-    "@nuxtjs/tailwindcss": "latest",
-    "postcss": "latest",
-    "autoprefixer": "latest",
-    "tailwindcss": "latest"
+    "vue-tsc": "2.1.10"
   },
   "prisma": {
     "seed": "node --loader ts-node/esm prisma/seed.ts"
